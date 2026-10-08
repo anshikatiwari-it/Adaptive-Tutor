@@ -1,0 +1,417 @@
+[
+  {
+    "id": "q1",
+    "question": "What is a stack?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "A stack follows LIFO: last in, first out. Push adds to the top and pop removes from the top, both in O(1).",
+    "reference_contexts": [
+      "A stack follows LIFO: last in, first out. Push adds to the top and pop removes from the top, both in O(1)."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 14"
+      }
+    ]
+  },
+  {
+    "id": "q2",
+    "question": "What are stacks used for?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Stacks are used for function call management, undo operations and balancing parentheses.",
+    "reference_contexts": [
+      "Stacks are used for function call management, undo operations and balancing parentheses."
+    ],
+    "reference_locations": [
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 77"
+      }
+    ]
+  },
+  {
+    "id": "q3",
+    "question": "What is FIFO?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front.",
+    "reference_contexts": [
+      "A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "12:40"
+      }
+    ]
+  },
+  {
+    "id": "q4",
+    "question": "How does a circular queue reuse space?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "A circular queue reuses freed space by wrapping the rear pointer around the array using modulo.",
+    "reference_contexts": [
+      "A circular queue reuses freed space by wrapping the rear pointer around the array using modulo."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 18"
+      }
+    ]
+  },
+  {
+    "id": "q5",
+    "question": "Cost of inserting in the middle of an array?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Inserting or deleting in the middle of an array requires shifting elements, which costs O(n).",
+    "reference_contexts": [
+      "Inserting or deleting in the middle of an array requires shifting elements, which costs O(n)."
+    ],
+    "reference_locations": [
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 41"
+      }
+    ]
+  },
+  {
+    "id": "q6",
+    "question": "What does a doubly linked list add?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "A doubly linked list keeps both next and prev pointers, so you can traverse in both directions at the cost of extra memory.",
+    "reference_contexts": [
+      "A doubly linked list keeps both next and prev pointers, so you can traverse in both directions at the cost of extra memory."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 9"
+      }
+    ]
+  },
+  {
+    "id": "q7",
+    "question": "Complexity of merge sort?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Merge sort divides the array in halves, sorts each half and merges them, running in O(n log n) time in all cases.",
+    "reference_contexts": [
+      "Merge sort divides the array in halves, sorts each half and merges them, running in O(n log n) time in all cases."
+    ],
+    "reference_locations": [
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 103"
+      }
+    ]
+  },
+  {
+    "id": "q8",
+    "question": "Bubble sort worst case?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Bubble sort repeatedly swaps adjacent out-of-order elements and takes O(n²) time in the worst case.",
+    "reference_contexts": [
+      "Bubble sort repeatedly swaps adjacent out-of-order elements and takes O(n²) time in the worst case."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 27"
+      }
+    ]
+  },
+  {
+    "id": "q9",
+    "question": "Inorder traversal of a BST?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Inorder traversal of a BST visits nodes in sorted order. In a skewed tree, search degrades to O(n).",
+    "reference_contexts": [
+      "Inorder traversal of a BST visits nodes in sorted order. In a skewed tree, search degrades to O(n)."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "31:05"
+      }
+    ]
+  },
+  {
+    "id": "q10",
+    "question": "Search in a balanced binary search tree?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "A binary search tree keeps smaller keys in the left subtree and larger keys in the right subtree, giving O(log n) search when the tree is balanced.",
+    "reference_contexts": [
+      "A binary search tree keeps smaller keys in the left subtree and larger keys in the right subtree, giving O(log n) search when the tree is balanced."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 22"
+      }
+    ]
+  },
+  {
+    "id": "q11",
+    "question": "How do I reverse a linked list?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "To reverse a singly linked list, walk through it once and flip each next pointer to point to the previous node, which takes O(n) time and O(1) extra space.",
+    "reference_contexts": [
+      "To reverse a singly linked list, walk through it once and flip each next pointer to point to the previous node, which takes O(n) time and O(1) extra space."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "08:30"
+      }
+    ]
+  },
+  {
+    "id": "q12",
+    "question": "How is a postfix expression evaluated?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Evaluating a postfix expression uses a stack: push operands, and on each operator pop two values, apply it, and push the result.",
+    "reference_contexts": [
+      "Evaluating a postfix expression uses a stack: push operands, and on each operator pop two values, apply it, and push the result."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "16:05"
+      }
+    ]
+  },
+  {
+    "id": "q13",
+    "question": "When is quick sort slow?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Quick sort picks a pivot and partitions the array around it. Average time is O(n log n), but a bad pivot gives a worst case of O(n²).",
+    "reference_contexts": [
+      "Quick sort picks a pivot and partitions the array around it. Average time is O(n log n), but a bad pivot gives a worst case of O(n²)."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "38:20"
+      }
+    ]
+  },
+  {
+    "id": "q14",
+    "question": "Compare linked list insertion and array insertion",
+    "type": "multi-source",
+    "answerable": true,
+    "ground_truth": "A linked list is a chain of nodes, each holding data and a pointer to the next node. Insertion at the head is O(1) but searching is O(n). Inserting or deleting in the middle of an array requires shifting elements, which costs O(n).",
+    "reference_contexts": [
+      "A linked list is a chain of nodes, each holding data and a pointer to the next node. Insertion at the head is O(1) but searching is O(n).",
+      "Inserting or deleting in the middle of an array requires shifting elements, which costs O(n)."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "06:12"
+      },
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 41"
+      }
+    ]
+  },
+  {
+    "id": "q15",
+    "question": "What are the time complexities of merge sort and bubble sort?",
+    "type": "multi-source",
+    "answerable": true,
+    "ground_truth": "Merge sort divides the array in halves, sorts each half and merges them, running in O(n log n) time in all cases. Bubble sort repeatedly swaps adjacent out-of-order elements and takes O(n²) time in the worst case.",
+    "reference_contexts": [
+      "Merge sort divides the array in halves, sorts each half and merges them, running in O(n log n) time in all cases.",
+      "Bubble sort repeatedly swaps adjacent out-of-order elements and takes O(n²) time in the worst case."
+    ],
+    "reference_locations": [
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 103"
+      },
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 27"
+      }
+    ]
+  },
+  {
+    "id": "q16",
+    "question": "How do stacks and queues differ?",
+    "type": "multi-source",
+    "answerable": true,
+    "ground_truth": "A stack follows LIFO: last in, first out. Push adds to the top and pop removes from the top, both in O(1). A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front.",
+    "reference_contexts": [
+      "A stack follows LIFO: last in, first out. Push adds to the top and pop removes from the top, both in O(1).",
+      "A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 14"
+      },
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "12:40"
+      }
+    ]
+  },
+  {
+    "id": "q17",
+    "question": "How is an array stored in memory?",
+    "type": "multi-source",
+    "answerable": true,
+    "ground_truth": "An array stores elements in contiguous memory, so reading an element by index takes constant time, O(1). A two-dimensional array in C is stored in row-major order, so the address of element (i, j) is base + (i × columns + j) × size.",
+    "reference_contexts": [
+      "An array stores elements in contiguous memory, so reading an element by index takes constant time, O(1).",
+      "A two-dimensional array in C is stored in row-major order, so the address of element (i, j) is base + (i × columns + j) × size."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 3"
+      },
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 5"
+      }
+    ]
+  },
+  {
+    "id": "q18",
+    "question": "What is the search cost of a BST when balanced versus skewed?",
+    "type": "multi-source",
+    "answerable": true,
+    "ground_truth": "A binary search tree keeps smaller keys in the left subtree and larger keys in the right subtree, giving O(log n) search when the tree is balanced. Inorder traversal of a BST visits nodes in sorted order. In a skewed tree, search degrades to O(n).",
+    "reference_contexts": [
+      "A binary search tree keeps smaller keys in the left subtree and larger keys in the right subtree, giving O(log n) search when the tree is balanced.",
+      "Inorder traversal of a BST visits nodes in sorted order. In a skewed tree, search degrades to O(n)."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture2.pptx",
+        "location": "Slide 22"
+      },
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "31:05"
+      }
+    ]
+  },
+  {
+    "id": "q19",
+    "question": "Which structure undoes my last action?",
+    "type": "paraphrase",
+    "answerable": true,
+    "ground_truth": "Stacks are used for function call management, undo operations and balancing parentheses.",
+    "reference_contexts": [
+      "Stacks are used for function call management, undo operations and balancing parentheses."
+    ],
+    "reference_locations": [
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 77"
+      }
+    ]
+  },
+  {
+    "id": "q20",
+    "question": "What does first come first served mean in computing?",
+    "type": "paraphrase",
+    "answerable": true,
+    "ground_truth": "A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front.",
+    "reference_contexts": [
+      "A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front."
+    ],
+    "reference_locations": [
+      {
+        "source": "DS_Lecture3.mp4",
+        "location": "12:40"
+      }
+    ]
+  },
+  {
+    "id": "q21",
+    "question": "How many nodes can a full binary tree hold?",
+    "type": "paraphrase",
+    "answerable": true,
+    "ground_truth": "A full binary tree of height h has at most 2^(h+1) - 1 nodes, counting the root as height 0.",
+    "reference_contexts": [
+      "A full binary tree of height h has at most 2^(h+1) - 1 nodes, counting the root as height 0."
+    ],
+    "reference_locations": [
+      {
+        "source": "Textbook_DS.pdf",
+        "location": "Page 142"
+      }
+    ]
+  },
+  {
+    "id": "q22",
+    "question": "Explain quantum entanglement",
+    "type": "off-material",
+    "answerable": false,
+    "ground_truth": "The course material does not cover this question.",
+    "reference_contexts": [],
+    "reference_locations": []
+  },
+  {
+    "id": "q23",
+    "question": "Who won the 1998 World Cup?",
+    "type": "off-material",
+    "answerable": false,
+    "ground_truth": "The course material does not cover this question.",
+    "reference_contexts": [],
+    "reference_locations": []
+  },
+  {
+    "id": "q24",
+    "question": "How does photosynthesis work?",
+    "type": "off-material",
+    "answerable": false,
+    "ground_truth": "The course material does not cover this question.",
+    "reference_contexts": [],
+    "reference_locations": []
+  },
+  {
+    "id": "q25",
+    "question": "What is a hash table?",
+    "type": "off-material",
+    "answerable": false,
+    "ground_truth": "The course material does not cover this question.",
+    "reference_contexts": [],
+    "reference_locations": []
+  },
+  {
+    "id": "q26",
+    "question": "Explain gradient descent",
+    "type": "off-material",
+    "answerable": false,
+    "ground_truth": "The course material does not cover this question.",
+    "reference_contexts": [],
+    "reference_locations": []
+  },
+  {
+    "id": "q27",
+    "question": "What is the capital of France?",
+    "type": "off-material",
+    "answerable": false,
+    "ground_truth": "The course material does not cover this question.",
+    "reference_contexts": [],
+    "reference_locations": []
+  }
+]
