@@ -142,7 +142,8 @@ table.req{border-collapse:collapse;width:100%;font-size:14px}table.req td,table.
 </section>
 
 <section id="mat"><div class="grid"><div class="card"><h2>Lecture video</h2>
-<div id="vph" style="background:#14173A;color:#fff;border-radius:8px;padding:28px 12px;text-align:center">DS_Lecture3.mp4<br><span id="clock">Not playing. Select a timestamp.</span></div>
+<div class="row" style="margin-bottom:8px;align-items:center"><label>Lecture <select id="lsel" aria-label="Choose lecture" style="font:inherit;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)"></select></label></div>
+<div id="vph" style="background:#14173A;color:#fff;border-radius:8px;padding:28px 12px;text-align:center"><b id="vname">DS_Lecture3.mp4</b><br><span id="clock">Not playing. Select a timestamp.</span></div>
 <video id="vid" controls hidden style="width:100%;border-radius:8px"></video>
 <p class="mut">Have the lecture file? <input type="file" id="vf" accept="video/*" aria-label="Attach lecture video"><br>It stays on your device, and timestamps then seek the real video.</p>
 <h3>Transcript with timestamps</h3><div id="tr"></div></div>
@@ -465,15 +466,15 @@ const chk=(q,v)=>q[7]==='num'?Math.abs(parseFloat(v)-q[2])<1e-9:q[8].some(w=>v.t
 const F={a1:'memory cells 0 to n-1 drawn side by side with index labels',l2:'nodes joined by two arrows, next and prev',t1:'tree diagram with 8 at the root, 3 on the left and 10 on the right'};
 const secs=t=>t.split(':').reduce((a,b)=>a*60+ +b,0),mmss=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
 let kind='slides';
-function matRender(){const tr=$('#tr');tr.textContent='';
- Object.entries(C).filter(([i,c])=>ST[c[1]]==='video').sort((a,b)=>secs(a[1][2])-secs(b[1][2])).forEach(([id,c])=>{const r=mk('div',null,'urow');r.id='u-'+id;const b=mk('button',c[2],'cite');b.onclick=()=>openAt(id);r.append(b,document.createTextNode(' '+c[3]));tr.append(r)});matList()}
+function matRender(){lsel();const tr=$('#tr');tr.textContent='';
+ Object.entries(C).filter(([i,c])=>ST[c[1]]==='video'&&c[1]===curVid).sort((a,b)=>secs(a[1][2])-secs(b[1][2])).forEach(([id,c])=>{const r=mk('div',null,'urow');r.id='u-'+id;const b=mk('button',c[2],'cite');b.onclick=()=>openAt(id);r.append(b,document.createTextNode(' '+c[3]));tr.append(r)});matList()}
 function matList(){const l=$('#ml');l.textContent='';
  Object.entries(C).filter(([i,c])=>ST[c[1]]===kind).sort((a,b)=>parseInt(a[1][2].replace(/\D/g,''))-parseInt(b[1][2].replace(/\D/g,''))).forEach(([id,c])=>{const r=mk('div',null,'urow');r.id='u-'+id;r.append(mk('b',c[2]+': '),document.createTextNode(c[3]));const fg=FIG[id];if(fg){r.append(mk('div','Figure text extracted: '+(fg.alt||'image without alt text'),'mut'));if(fg.img){const im=document.createElement('img');im.src=fg.img;im.alt=fg.alt||'Slide figure';im.style.cssText='max-width:160px;max-height:100px;display:block;border-radius:6px';r.append(im)}};l.append(r)})}
 $('#ks').onclick=()=>{kind='slides';matList()};$('#kb').onclick=()=>{kind='book';matList()};
-function openAt(id){const c=C[id];if(ST[c[1]]!=='video')kind=ST[c[1]];document.querySelector('[data-t=mat]').click();
- if(ST[c[1]]==='video'){const t=secs(c[2]),v=$('#vid');$('#clock').textContent='Playing from '+c[2]+' (transcript highlighted)';if(!v.hidden){v.currentTime=t;const p=v.play();if(p)p.catch(()=>{})}}
+function openAt(id){const c=C[id];if(ST[c[1]]!=='video')kind=ST[c[1]];else curVid=c[1];document.querySelector('[data-t=mat]').click();
+ if(ST[c[1]]==='video'){const t=secs(c[2]),v=$('#vid');$('#clock').textContent='Playing from '+c[2]+' (transcript highlighted)';if(!v.hidden){v.currentTime=t;const p=v.play();if(p)p.catch(()=>{});pend=null}else pend=t}
  document.querySelectorAll('.urow').forEach(r=>r.classList.remove('hl'));const e=$('#u-'+id);if(e){e.classList.add('hl');e.scrollIntoView({block:'center'})}}
-$('#vf').onchange=e=>{const f=e.target.files[0];if(!f)return;const v=$('#vid');v.src=URL.createObjectURL(f);v.hidden=false;$('#vph').hidden=true;v.onerror=()=>{v.hidden=true;$('#vph').hidden=false;$('#clock').textContent='This browser blocked the file here. Timestamps still highlight the transcript.'}};
+$('#vf').onchange=e=>{const f=e.target.files[0];if(!f)return;VS[curVid]=URL.createObjectURL(f);$('#vid').dataset.k='';lsel()};
 /* knowledge base: ingestion, tagging, topics, prerequisites */
 const FIG={},CT={},CS={},SW={},ST={ds_l2:'slides',ds_l3:'video',book:'book'};let DF={},upn=0,nk=0;
 Object.keys(F).forEach(k=>FIG[k]={alt:F[k]});
@@ -511,7 +512,7 @@ const JSZ='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',PDF
 const loadLib=u=>new Promise((res,rej)=>{if(document.querySelector('script[src="'+u+'"]'))return res();const e=document.createElement('script');e.src=u;e.onload=res;e.onerror=()=>rej(new Error('library blocked'));document.head.append(e)});
 async function ingestFile(f){const ext=f.name.split('.').pop().toLowerCase(),li=mk('li',f.name+': reading');$('#pipe').append(li);const key='up'+(++upn);
  try{let units,type;
-  if(f.type.startsWith('video/')||ext==='mp4'){const v=$('#vid');v.src=URL.createObjectURL(f);v.hidden=false;$('#vph').hidden=true;li.textContent=f.name+': attached to the lecture player. Transcribing needs a speech model on the backend, so add its .srt or .vtt to index it.';return}
+  if(f.type.startsWith('video/')||ext==='mp4'){VS[curVid]=URL.createObjectURL(f);$('#vid').dataset.k='';lsel();li.textContent=f.name+': attached to the lecture player. Transcribing needs a speech model on the backend, so add its .srt or .vtt to index it.';return}
   S[key]=f.name;
   if(ext==='srt'||ext==='vtt'){type='video';units=parseCues(await f.text())}
   else if(ext==='txt'||ext==='md'){type='book';units=parsePages(await f.text())}
@@ -717,5 +718,14 @@ function drawMap(mp){mp.textContent='';const ns='http://www.w3.org/2000/svg',ks=
  const w=mk('div');w.style.overflowX='auto';w.append(s);mp.append(w,mk('p','Arrows run from prerequisite to topic. Green is strong, yellow developing, red weak. Orange outline marks DAA topics; grey marks Data Structures.','mut'))}
 const sf=$('#sfil');['All','Data Structures','DAA'].forEach(n=>{const b=mk('button',n,'chip');b.onclick=()=>{subjF=n;tchips();sf.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))};b.setAttribute('aria-pressed',n==='All');sf.append(b)});
 
+let curVid='ds_l3',vidFor=null,VS={},pend=null;
+function lsel(){const sel=$('#lsel');sel.textContent='';Object.keys(S).filter(k=>ST[k]==='video').forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=S[k];sel.append(o)});
+ sel.value=curVid;$('#vname').textContent=S[curVid];const v=$('#vid'),src=VS[curVid]||(/\.mp4$/i.test(S[curVid])?S[curVid]:'');
+ if(v.dataset.k===curVid)return;v.dataset.k=curVid;v.hidden=true;$('#vph').hidden=false;
+ if(!src){v.removeAttribute('src');return}
+ v.onloadeddata=()=>{if(v.dataset.k!==curVid)return;v.hidden=false;$('#vph').hidden=true;vidFor=curVid;if(pend!=null){v.currentTime=pend;const p=v.play();if(p)p.catch(()=>{});pend=null}};
+ v.onerror=()=>{if(v.dataset.k===curVid){v.hidden=true;$('#vph').hidden=false;$('#clock').textContent='Video file not found. Put '+S[curVid]+' in the same folder as index.html, or choose your own file below.'}};
+ v.src=src}
+$('#lsel').onchange=e=>{curVid=e.target.value;$('#clock').textContent='Not playing. Select a timestamp.';matRender()};
 tagAll();srcs();tchips();
 </script></body></html>

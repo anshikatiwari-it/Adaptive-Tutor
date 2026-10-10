@@ -7,7 +7,7 @@ timestamp, runs adaptive quizzes, and models what the student knows.
 Sample courses included: Data Structures and Design and Analysis of Algorithms (DAA).
 
 ## Run it
-Open `index.html` in a browser. No install or server needed. Everything runs in the browser.
+Open `index.html` in a browser. No install or server needed. Keep `DS_Lecture3.mp4` and `DAA_Lecture2.mp4` in the same folder so the sample lecture videos play.
 
 ## What is inside
 - `index.html` : the whole prototype (library and ingestion, tutor chat, adaptive quiz, learner model, dashboard, evaluation)
