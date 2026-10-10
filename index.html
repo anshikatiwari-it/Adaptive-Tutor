@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adaptive Tutor – source-grounded study companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F5F9;--card:#fff;--ink:#14173A;--mut:#5d6385;--line:#d9dded;--acc:#2B2F9E;--hl:#FFE45C;--ok:#1a8a5a;--bad:#c63b3b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1226;--card:#181c3a;--ink:#eceefb;--mut:#9aa0cc;--line:#2a2f5c;--acc:#8e93ff;--hl:#6b5d00}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 'Bricolage Grotesque',system-ui,sans-serif}
+header{max-width:960px;margin:0 auto;padding:28px 18px 8px}
+h1{font-size:clamp(34px,7vw,60px);line-height:1;margin:0 0 8px;font-weight:800;letter-spacing:-.02em}
+h1 mark{background:var(--hl);color:inherit;padding:0 .12em}
+header p{margin:0;color:var(--mut);max-width:60ch}
+nav{max-width:960px;margin:14px auto 0;padding:0 18px;display:flex;gap:6px;flex-wrap:wrap}
+nav button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--acc);color:#fff;border-color:var(--acc)}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+main{max-width:960px;margin:0 auto;padding:16px 18px 60px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+h2{margin:0 0 10px;font-size:22px}h3{margin:0 0 6px;font-size:16px}
+.mut{color:var(--mut);font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.cite{font:inherit;font-size:13px;font-weight:600;background:var(--hl);color:#14173A;border:0;border-radius:4px;padding:1px 7px;margin:0 2px;cursor:pointer}
+.msgs{display:flex;flex-direction:column;gap:10px;min-height:260px;max-height:55vh;overflow:auto;margin-bottom:10px}
+.m{padding:10px 12px;border-radius:10px;max-width:88%}
+.u{align-self:flex-end;background:var(--acc);color:#fff}
+.b{background:var(--bg);border:1px solid var(--line)}
+.flag{border-left:4px solid var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:180px;font:inherit;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.btn{font:inherit;font-weight:600;border:0;background:var(--acc);color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:4px 10px;cursor:pointer}
+.opt{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:6px 0;cursor:pointer}
+.opt.right{border-color:var(--ok);background:rgba(26,138,90,.14)}.opt.wrong{border-color:var(--bad);background:rgba(198,59,59,.14)}
+.tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-right:4px;color:var(--mut)}
+.bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);transition:width .4s}
+.mrow{display:grid;grid-template-columns:110px 1fr 44px;gap:10px;align-items:center;margin:8px 0}
+#viewer{position:sticky;top:8px}
+blockquote{margin:8px 0 0;padding:8px 12px;background:var(--hl);color:#14173A;border-radius:4px}
+ol.pipe{padding-left:20px;margin:8px 0}ol.pipe li{margin:4px 0}
+svg text{fill:var(--ink);font:12px 'Bricolage Grotesque',sans-serif}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.urow{padding:8px;border-bottom:1px solid var(--line)}.urow.hl{background:var(--hl);color:#14173A;border-radius:6px}
+.pg{display:none}.pg.on{display:block}
+.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.site div{max-width:960px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.site b{font-size:20px;font-weight:800;margin-right:auto}.site b i{font-style:normal;background:var(--hl);color:#14173A;padding:0 5px}
+.site button{font:inherit;font-weight:600;background:none;border:0;color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer}
+.site button[aria-current=page]{background:var(--acc);color:#fff}
+.wrap{max-width:960px;margin:0 auto;padding:0 18px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;padding:44px 0 36px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(36px,6.5vw,62px)}
+.mock{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.feat{border-top:1px solid var(--line);padding:16px 0;display:grid;grid-template-columns:200px 1fr;gap:16px}
+@media(max-width:640px){.feat{grid-template-columns:1fr;gap:4px}}
+.feat h3{margin:0;font-size:18px}.feat p{margin:0;color:var(--mut)}
+.band{background:var(--acc);color:#fff;border-radius:12px;padding:28px;margin:36px 0;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.band h2{margin:0;color:#fff}.band .btn{background:var(--hl);color:#14173A}
+footer{border-top:1px solid var(--line);padding:20px 0 40px;color:var(--mut);font-size:14px}
+table.req{border-collapse:collapse;width:100%;font-size:14px}table.req td,table.req th{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+.wrap h2.big{font-size:28px;margin:34px 0 10px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;margin-bottom:6px}
+.badge.ok{background:var(--ok);color:#fff}.badge.part{background:var(--hl);color:#14173A}.badge.none{background:var(--bad);color:#fff}
+.outside{border:2px dashed var(--mut);border-radius:8px;padding:8px 10px;margin-top:8px}
+</style></head><body>
+<div class="site"><div><b>Adaptive Tutor<i>.</i></b>
+<button data-go="home" id="sn-home">Home</button><button data-go="app" id="sn-app">Study app</button><button data-go="docs" id="sn-docs">How it works</button></div></div>
+
+<div id="p-home" class="pg on"><div class="wrap">
+<div class="hero"><div><h1>Study from your own course, with the page number to prove it.</h1>
+<p class="mut" style="font-size:18px;max-width:46ch">Adaptive Tutor reads your lecture videos, slides and textbooks, answers only from them, and keeps track of what you actually know.</p>
+<div class="row" style="margin-top:18px"><button class="btn" data-go="app">Open the study app</button><button class="btn alt" data-go="docs">See how it works</button></div></div>
+<div class="mock" aria-label="Example of a cited answer"><p class="mut" style="margin:0 0 8px">Try a question from the sample course</p>
+<div class="m u" style="max-width:100%;margin-bottom:8px">What is a stack?</div>
+<div class="m b" style="max-width:100%">A stack follows LIFO: last in, first out. Push adds to the top and pop removes from the top, both in O(1). <span class="cite">Slide 14 · DS_Lecture2.pptx</span></div>
+<div class="row" style="margin-top:12px"><button class="chip" data-demo="What is a stack?">Ask this</button><button class="chip" data-demo="Why is merge sort O(n log n)?">Merge sort</button><button class="chip" data-demo="Explain quantum entanglement">Something not in the course</button></div></div></div>
+
+<h2 class="big">What you get</h2>
+<div class="feat"><h3>Answers with receipts</h3><p>Every answer quotes your material and links to the exact slide, page or video timestamp. If the course does not cover a question, it says so instead of guessing.</p></div>
+<div class="feat"><h3>One library for everything</h3><p>Slides, textbooks and lecture transcripts are split into units, sorted into topics and concepts, and linked to prerequisites. Figures in slides are read too.</p></div>
+<div class="feat"><h3>Quizzes that adapt</h3><p>Multiple choice, short answer and numerical questions, a diagnostic for new students, and timed mock exams on the topics you choose. No question repeats.</p></div>
+<div class="feat"><h3>A model of what you know</h3><p>Mastery per topic updates after every answer, so the next question targets your weak spots and the report names likely misconceptions.</p></div>
+<div class="feat"><h3>Revision and planning</h3><p>Flashcards from weak topics, a study schedule that accounts for forgetting before your exam, Hindi explanations and read-aloud.</p></div>
+
+<h2 class="big">From files to answers</h2>
+<ol class="pipe" style="font-size:17px"><li>Add your slides, textbook and lecture transcript.</li><li>The library splits them into units and tags each one with a topic, concepts and its source location.</li><li>Ask questions or take a quiz. Answers cite the source and every response updates your mastery.</li><li>Check the dashboard for weak topics, then revise with flashcards and the schedule.</li></ol>
+<div class="band"><h2>Try it on the sample Data Structures and DAA courses</h2><button class="btn" data-go="app">Open the study app</button></div>
+<footer>Prototype built for Track D: Personalized Tutoring and Adaptive Learning. Runs entirely in your browser; the sample course is a small demo.</footer></div></div>
+
+<div id="p-docs" class="pg"><div class="wrap">
+<h1 style="font-size:clamp(32px,5vw,48px);margin:36px 0 8px">How it works</h1>
+<p class="mut" style="max-width:62ch">The design behind the prototype, and where this demo stops and a full backend would begin.</p>
+<h2 class="big">Architecture</h2>
+<div style="overflow-x:auto"><svg viewBox="0 0 760 210" width="100%" style="min-width:640px" role="img" aria-label="Pipeline from course files through ingestion, knowledge base, tutor and assessment, to the learner model and dashboard">
+<g stroke="var(--line)" fill="var(--card)"><rect x="6" y="70" width="110" height="60" rx="8"/><rect x="146" y="70" width="130" height="60" rx="8"/><rect x="306" y="70" width="130" height="60" rx="8"/><rect x="466" y="20" width="140" height="56" rx="8"/><rect x="466" y="124" width="140" height="56" rx="8"/><rect x="636" y="70" width="118" height="60" rx="8"/></g>
+<g stroke="var(--mut)" fill="none"><path d="M116 100h30M276 100h30M436 100l30-52M436 100l30 52M606 48l30 52M606 152l30-52"/></g>
+<g text-anchor="middle"><text x="61" y="96">Videos, slides,</text><text x="61" y="112">textbooks</text><text x="211" y="96">Ingestion</text><text x="211" y="112">transcribe, parse, caption</text><text x="371" y="96">Knowledge base</text><text x="371" y="112">units, topics, graph</text><text x="536" y="44">Tutor chat</text><text x="536" y="60">retrieve and cite</text><text x="536" y="148">Assessment</text><text x="536" y="164">generate and verify</text><text x="695" y="96">Learner model</text><text x="695" y="112">and dashboard</text></g></svg></div>
+<h2 class="big">Grounding</h2>
+<p>Each unit keeps its source file and location. A question is matched against units, and the answer is assembled from the best-matching excerpts with citations that open the exact page, slide or timestamp. The answer carries one of three labels: from your course, partly covered (naming the terms the material never mentions), or not in your course material. Anything from outside the course appears only on request, in a dashed box labelled as uncited general knowledge. In this prototype the answer is the excerpt itself, so it is faithful by construction. A full system would retrieve with embeddings plus keyword search, rerank, and have an LLM write the answer constrained to those excerpts.</p>
+<h2 class="big">Learner model</h2>
+<p>Mastery per topic uses Bayesian knowledge tracing. After each answer, the probability the topic is known is updated from whether the answer was right, allowing for slips and lucky guesses, then nudged up for learning. Guess and slip rates depend on question difficulty, mastery decays on a forgetting curve so topics come due for review, and chat questions add small evidence. New students answer a short intake chat for starting estimates, then take a diagnostic that corrects them. The next question comes from the weakest topic whose prerequisites are in place, at a difficulty matched to the estimate.</p>
+<h2 class="big">Evaluation</h2>
+<p>The Evaluation tab measures retrieval on a small test set with known source locations and off-material queries, and simulates students to compare adaptive and random selection. For faithfulness and answer relevancy at scale, run the same test set through RAGAS against the LLM-backed system.</p>
+<h2 class="big">Requirement coverage</h2>
+<div style="overflow-x:auto"><table class="req"><tr><th>Requirement</th><th>In this prototype</th><th>Needs a backend</th></tr>
+<tr><td>Multimodal knowledge base</td><td>Slides, PDFs, text and transcripts, auto topics, concepts, prerequisites, figure alt text</td><td>Video transcription, image captioning, LLM concept extraction</td></tr>
+<tr><td>Source grounding</td><td>Cited excerpts, deep links, refusal when not covered</td><td>Embedding retrieval, LLM answers, labelled outside knowledge</td></tr>
+<tr><td>Adaptive assessment</td><td>Multiple choice, short, numerical, diagnostic, mock exams, cited feedback, no repeats</td><td>Question generation and cross-model verification</td></tr>
+<tr><td>Learner model</td><td>Bayesian knowledge tracing, weak-topic report, misconceptions</td><td>Saved profiles across devices</td></tr>
+<tr><td>Evaluation</td><td>Retrieval metrics and simulated students</td><td>RAGAS faithfulness and relevancy</td></tr>
+<tr><td>Optional extras</td><td>Course map, flashcards, schedule, Hindi, read-aloud</td><td>Full Hindi translation, voice tutoring</td></tr></table></div>
+<div class="band"><h2>See it working</h2><button class="btn" data-go="app">Open the study app</button></div>
+<footer>Adaptive Tutor prototype</footer></div></div>
+
+<div id="p-app" class="pg"><header><h1>Adaptive Tutor<mark>.</mark></h1>
+<p>A study companion that answers only from your lectures, slides and textbooks, cites the exact page, slide or timestamp, and tracks what you actually know. Prototype with two sample courses: Data Structures and Design and Analysis of Algorithms (DAA).</p></header>
+<nav role="tablist" aria-label="Sections">
+<button role="tab" aria-selected="true" data-t="lib">Library</button>
+<button role="tab" aria-selected="false" data-t="mat">Lectures &amp; textbook</button>
+<button role="tab" aria-selected="false" data-t="chat">Tutor chat</button>
+<button role="tab" aria-selected="false" data-t="quiz">Adaptive quiz</button>
+<button role="tab" aria-selected="false" data-t="dash">Dashboard</button>
+<button role="tab" aria-selected="false" data-t="lm">My learning</button>
+<button role="tab" aria-selected="false" data-t="rev">Revise</button>
+<button role="tab" aria-selected="false" data-t="ev">Evaluation</button></nav>
+<main>
+<section id="lib" class="on">
+<div class="grid"><div>
+<div class="card"><h2>Add material</h2>
+<p class="mut">Add your own slide deck (.pptx), textbook (.pdf, .txt, .md) or lecture transcript (.srt, .vtt), or attach a lecture video. Everything is processed in your browser and nothing is uploaded.</p>
+<input type="file" id="fin" multiple accept=".pptx,.pdf,.txt,.md,.srt,.vtt,video/*" aria-label="Add course files"><div class="row" style="margin-top:8px"><button class="btn alt" id="ing">Replay sample pipeline</button></div>
+<ol class="pipe" id="pipe" aria-live="polite"></ol></div>
+<div class="card"><h2>Sources</h2><div id="srcs"></div></div></div>
+<div class="card"><h2>Topics and prerequisites</h2><p class="mut">Every unit is tagged to a topic and linked to its origin. Select a topic to list its units.</p>
+<div class="row" id="sfil" style="margin-bottom:8px"></div><div class="row" id="tchips"></div><h3 style="margin-top:12px">Key concepts</h3><div class="row" id="cidx"></div><div id="units" style="margin-top:10px"></div></div></div>
+</section>
+
+<section id="mat"><div class="grid"><div class="card"><h2>Lecture video</h2>
+<div id="vph" style="background:#14173A;color:#fff;border-radius:8px;padding:28px 12px;text-align:center">DS_Lecture3.mp4<br><span id="clock">Not playing. Select a timestamp.</span></div>
+<video id="vid" controls hidden style="width:100%;border-radius:8px"></video>
+<p class="mut">Have the lecture file? <input type="file" id="vf" accept="video/*" aria-label="Attach lecture video"><br>It stays on your device, and timestamps then seek the real video.</p>
+<h3>Transcript with timestamps</h3><div id="tr"></div></div>
+<div class="card"><h2>Slides and textbook</h2><div class="row"><button class="chip" id="ks">Slides</button><button class="chip" id="kb">Textbook</button></div><div id="ml" style="margin-top:8px"></div></div></div></section>
+
+<section id="chat"><div class="grid"><div class="card">
+<h2>Ask your course</h2><label class="mut"><input type="checkbox" id="hi"> Also explain in Hindi (हिंदी) and enable read-aloud in Hindi</label><div class="msgs" id="msgs" aria-live="polite"></div>
+<div class="row" style="margin-bottom:8px"><button class="chip">What is a stack?</button><button class="chip">Why is merge sort O(n log n)?</button><button class="chip">How does a BST search work?</button><button class="chip">Compare quick sort and heap sort</button><button class="chip">Explain quantum entanglement</button></div>
+<div class="row"><input type="text" id="q" placeholder="Ask a question about your material" aria-label="Question"><button class="btn" id="ask">Ask</button></div></div>
+<div class="card" id="viewer"><h2>Source viewer</h2><p class="mut" id="vp">Select a yellow citation to open the exact page, slide or timestamp.</p></div></div></section>
+
+<section id="quiz"><div class="card"><h2>Adaptive quiz</h2>
+<p class="mut">Questions are picked from your weakest unlocked topic, at a difficulty matched to your mastery, and never repeat.</p>
+<div class="row" style="margin-bottom:10px"><button class="btn alt" id="diag">Diagnostic for new students</button><button class="btn alt" id="mock">Build a mock exam</button><button class="btn alt" id="prac">Practice question</button><button class="btn alt" id="cust">Custom quiz</button><button class="btn alt" id="gen">Generate questions</button><button class="btn alt" id="bk">Question bank</button></div><div id="qbox"></div><div id="bank"></div></div></section>
+
+<section id="dash"><div class="grid"><div class="card"><h2>Mastery by topic</h2><div id="mast"></div></div>
+<div class="card"><h2>Course map</h2><div id="map"></div></div></div>
+<div class="card"><h2>Report</h2><div id="rep"></div></div></section>
+<section id="lm"><div class="grid"><div>
+<div class="card"><h2>New here?</h2><p class="mut">With no history, the model starts every topic at 30%. Answer a short intake chat to set better starting estimates, then take the diagnostic to correct them.</p>
+<div class="row"><button class="btn" id="intk">Start intake chat</button><button class="btn alt" id="rstt">Reset to a new student</button></div>
+<div class="msgs" id="intake" style="min-height:0;max-height:none;margin-top:10px"></div></div>
+<div class="card"><h2>Move the clock</h2><p class="mut">Advance time to see forgetting and when reviews become due.</p>
+<input type="range" id="clk" min="0" max="30" value="0" aria-label="Days from now" style="width:100%"><p id="clkl" class="mut">Today</p></div></div>
+<div class="card"><h2>Mastery model</h2><div id="lmm"></div></div></div>
+<div class="card"><h2>Evidence log</h2><div id="evl"></div></div>
+<div class="card"><h2>How the estimate works</h2><p>Each topic has a probability that you know it. Every quiz answer updates it with Bayesian knowledge tracing, and a wrong answer on an easy question counts for more than a wrong answer on a hard one. Between sessions the estimate decays on a forgetting curve, and the next review is due when your predicted recall drops to 70%. Asking about a topic in chat adds a small amount of evidence. Question selection uses the decayed estimate, so topics you have not seen for a while come back.</p></div></section>
+
+<section id="rev"><div class="grid"><div class="card"><h2>Flashcards for weak topics</h2><p class="mut">Built from your three lowest-mastery topics. Take the quiz first to personalise them.</p><div id="fc"></div></div>
+<div class="card"><h2>Study schedule</h2><p class="mut">Ranks topics by weakness and by how much you are likely to have forgotten (recall = e<sup>-days/stability</sup>; stability grows with mastery).</p>
+<label>Exam date <input type="date" id="exam"></label><div id="sch" style="margin-top:10px"></div></div></div></section>
+
+<section id="ev"><div class="card"><h2>Evaluation</h2><p class="mut">Runs the prototype's real retriever on a team-built test set with known source locations and off-material queries, reports RAGAS-style metrics, then simulates student profiles across several sessions. For reportable LLM-judged numbers, run the same test set through RAGAS using the provided script.</p>
+<button class="btn" id="runev">Run evaluation</button></div><div id="evout"></div></section>
+</main></div>
+<script>
+const T={arr:'Arrays',ll:'Linked lists',stk:'Stacks',que:'Queues',tre:'Trees',srt:'Sorting'};
+const PRE={ll:['arr'],srt:['arr'],stk:['ll'],que:['ll'],tre:['stk','que']};
+const POS={arr:[80,40],ll:[80,120],srt:[240,40],stk:[40,200],que:[160,200],tre:[100,280]};
+const S={ds_l2:'DS_Lecture2.pptx',ds_l3:'DS_Lecture3.mp4',book:'Textbook_DS.pdf'};
+const C={
+a1:['arr','ds_l2','Slide 3','An array stores elements in contiguous memory, so reading an element by index takes constant time, O(1).'],
+a2:['arr','book','Page 41','Inserting or deleting in the middle of an array requires shifting elements, which costs O(n).'],
+l1:['ll','ds_l3','06:12','A linked list is a chain of nodes, each holding data and a pointer to the next node. Insertion at the head is O(1) but searching is O(n).'],
+l2:['ll','ds_l2','Slide 9','A doubly linked list keeps both next and prev pointers, so you can traverse in both directions at the cost of extra memory.'],
+s1:['stk','ds_l2','Slide 14','A stack follows LIFO: last in, first out. Push adds to the top and pop removes from the top, both in O(1).'],
+s2:['stk','book','Page 77','Stacks are used for function call management, undo operations and balancing parentheses.'],
+q1:['que','ds_l3','12:40','A queue follows FIFO: first in, first out. Enqueue adds at the rear and dequeue removes from the front.'],
+q2:['que','ds_l2','Slide 18','A circular queue reuses freed space by wrapping the rear pointer around the array using modulo.'],
+t1:['tre','ds_l2','Slide 22','A binary search tree keeps smaller keys in the left subtree and larger keys in the right subtree, giving O(log n) search when the tree is balanced.'],
+t2:['tre','ds_l3','31:05','Inorder traversal of a BST visits nodes in sorted order. In a skewed tree, search degrades to O(n).'],
+o1:['srt','book','Page 103','Merge sort divides the array in halves, sorts each half and merges them, running in O(n log n) time in all cases.'],
+o2:['srt','ds_l2','Slide 27','Bubble sort repeatedly swaps adjacent out-of-order elements and takes O(n²) time in the worst case.']};
+const Q=[
+['Which operation is O(1) on an array?',['Insert in the middle','Read by index','Search unsorted','Delete from the front'],1,1,'arr','a1','Confusing access with insertion cost'],
+['Why is middle insertion in an array O(n)?',['Memory must be allocated','Elements must shift','The array is sorted','Pointers must update'],1,2,'arr','a2','Treating arrays like linked lists'],
+['Which is O(1) in a singly linked list?',['Search by value','Insert at head','Access the k-th item','Reverse search'],1,1,'ll','l1','Assuming all list operations are fast'],
+['What does a doubly linked list add over a singly linked one?',['Faster index access','A prev pointer','Sorted order','Less memory'],1,2,'ll','l2','Missing the memory trade-off'],
+['A stack removes which element first?',['First in, first out','Last in, first out','Smallest first','Largest first'],1,1,'stk','s1','Mixing up LIFO and FIFO'],
+['Which task is a classic use of a stack?',['Printer jobs in order','Balancing parentheses','Binary search','Hashing'],1,2,'stk','s2','Not linking stacks to nesting'],
+['Which structure is FIFO?',['Stack','Queue','Binary tree','Array only'],1,1,'que','q1','Mixing up LIFO and FIFO'],
+['How does a circular queue reuse space?',['Shifts all items left','Wraps the rear pointer with modulo','Doubles the array','Deletes the front'],1,3,'que','q2','Not knowing why wrap-around avoids shifting'],
+['In a balanced BST, search takes?',['O(1)','O(log n)','O(n)','O(n²)'],1,2,'tre','t1','Confusing balanced and skewed trees'],
+['Inorder traversal of a BST gives?',['Reverse order','Sorted order','Level order','Random order'],1,2,'tre','t2','Mixing up traversal orders'],
+['Merge sort worst-case time?',['O(n)','O(n log n)','O(n²)','O(log n)'],1,2,'srt','o1','Mixing merge sort with bubble sort'],
+['Bubble sort worst case?',['O(n log n)','O(n²)','O(n)','O(1)'],1,1,'srt','o2','Assuming all sorts are O(n log n)']];
+const $=s=>document.querySelector(s);
+const mk=(tag,txt,cls)=>{const e=document.createElement(tag);if(txt!=null)e.textContent=txt;if(cls)e.className=cls;return e};
+const loc=id=>{const c=C[id];return c[2]+' · '+S[c[1]]};
+let mem={},used=new Set(),miscon={},hist=[],cur=null,answered=false,ingested=false;
+Object.keys(T).forEach(k=>mem[k]=.3);
+
+/* tabs */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+ document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));
+ if(b.dataset.t==='dash')dash();if(b.dataset.t==='lm')lmRender();if(b.dataset.t==='rev')rev();if(b.dataset.t==='mat')matRender();if(b.dataset.t==='quiz'&&!cur)nextQ();});
+
+/* library */
+function srcs(){const d=$('#srcs');d.textContent='';Object.entries(S).forEach(([k,v])=>{
+ const n=Object.values(C).filter(c=>c[1]===k).length;const r=mk('div',null,'mrow');r.style.gridTemplateColumns='1fr auto';
+ r.append(mk('span',v+' ('+({video:'video',book:'textbook',slides:'slides'}[ST[k]])+')'),mk('span',n+' units','mut'));d.append(r)})}
+function tchips(){}
+$('#ing').onclick=async()=>{const p=$('#pipe');p.textContent='';
+ for(const s of ['Transcribing video with timestamps','Extracting slide and page text','Reading figures and diagrams','Detecting topics and prerequisites','Linking each unit to its source location']){
+  const li=mk('li',s+'…');p.append(li);await new Promise(r=>setTimeout(r,450));li.textContent=s+' – done'}
+ ingested=true;};
+
+/* retrieval */
+const STOP=new Set('what is a an the of how does do why in to and are for which explain about me tell'.split(' '));
+const tok=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w));
+const stem=w=>w.replace(/(ing|es|s)$/,'');
+function retrieve(q){const qt=tok(q).map(stem);
+ return Object.entries(C).map(([id,c])=>{const ct=new Set(tok(c[3]+' '+T[c[0]]).map(stem));
+  return[id,qt.filter(w=>ct.has(w)).length/Math.max(qt.length,1)]}).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])}
+function view(id){const c=C[id],v=$('#viewer');v.textContent='';v.append(mk('h2','Source viewer'),
+ mk('p',S[c[1]],'mut'),mk('h3',c[2]+(ST[c[1]]==='video'?' (opens video at this time)':'')));
+ v.append(mk('span',T[c[0]],'tag'),mk('blockquote',c[3]));ctxNear(id,v);const o=mk('button',ST[c[1]]==='video'?'Jump to this moment in the lecture':'Open in '+(ST[c[1]]==='book'?'textbook':'slides'),'btn alt');o.style.marginTop='10px';o.onclick=()=>openAt(id);v.append(o)}
+function addMsg(who,parts,flag){const m=mk('div',null,'m '+(who==='u'?'u':'b')+(flag?' flag':''));
+ parts.forEach(p=>{if(typeof p==='string')m.append(document.createTextNode(p));else m.append(p)});
+ $('#msgs').append(m);$('#msgs').scrollTop=1e9}
+function citeBtn(id){const b=mk('button',loc(id),'cite');b.onclick=()=>view(id);return b}
+function ask(q){if(!q.trim())return;addMsg('u',[q]);
+ const r=retrieve(q),score=r.length?r[0][1]:0,qs=tok(q).filter(w=>!STOP2.has(w)).map(stem),miss=[...new Set(qs.filter(w=>!DF[w]))].map(w=>SW[w]||w);
+ const hi=$('#hi').checked,lvl=score<.34?'none':(score>=.6&&!miss.length?'ok':'part');
+ const parts=[mk('span',{ok:'From your course',part:'Partly covered',none:'Not in your course material'}[lvl],'badge '+lvl),mk('br')];
+ const out=OUT.find(o=>o[0].test(q));
+ const outBtn=()=>{if(!out){parts.push(mk('p','There is no general note for this either. Try your instructor or another reference.','mut'));return}
+  const b=mk('button','Show general knowledge (not from your course)','chip'),box=mk('div');
+  b.onclick=()=>{const d=mk('div',null,'outside');d.append(mk('b','Outside knowledge. '),document.createTextNode('Not from your material and not cited. Check it against your textbook. '+out[1]));box.append(d);b.hidden=true};parts.push(b,box)};
+ if(lvl==='none'){parts.push('I could not find this in your lectures, slides or textbooks, so I will not present it as course content. ');outBtn();addMsg('b',parts,true);return}
+ const top=r.filter(x=>x[1]>=score*.6).slice(0,2);
+ if(lvl==='part'){parts.push(miss.length?'Your material does not mention: '+miss.join(', ')+'. The excerpts below cover only the rest. ':'This is a weak match, so check the source. ',mk('br'))}
+ top.forEach(([id,sc])=>parts.push(hl(C[id][3],qs),' ',citeBtn(id),mk('span',' match '+Math.round(sc*100)+'%','mut'),mk('br')));
+ if(hi){parts.push('हिंदी: ');top.forEach(([id])=>parts.push((H[id]||'(Hindi needs the translation model)')+' '));parts.push(mk('br'))}
+ const sp=mk('button','Listen','chip');sp.onclick=()=>{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(top.map(([id])=>hi&&H[id]?H[id]:C[id][3]).join(' '));u.lang=hi?'hi-IN':'en-US';speechSynthesis.speak(u)};parts.push(sp);
+ if(lvl==='part'&&miss.length){parts.push(mk('br'));outBtn()}
+ addMsg('b',parts);view(top[0][0]);chatEvent(C[top[0][0]][0])}
+$('#ask').onclick=()=>{ask($('#q').value);$('#q').value=''};
+$('#q').onkeydown=e=>{if(e.key==='Enter')$('#ask').click()};
+document.querySelectorAll('#chat .chip').forEach(c=>c.onclick=()=>ask(c.textContent));
+addMsg('b',['Ask me anything about the sample course. Answers cite the exact slide, page or timestamp.']);
+
+/* adaptive quiz + BKT */
+function bkt(t,ok,q,kind){}
+function pick(){if(diagQ.length){diagOn=true;return diagQ.shift()}diagOn=false;if(scope&&sess.length>=scope.count)return null;const left=Q.map((q,i)=>i).filter(i=>!used.has(i)&&okq(i)&&inScope(i));if(!left.length)return null;
+ const unlocked=t=>(PRE[t]||[]).every(p=>mem[p]>=.35);
+ const topics=Object.keys(T).filter(t=>left.some(i=>Q[i][4]===t)).sort((a,b)=>{
+  const sa=(1-eff(a))+(unlocked(a)?0:.15),sb=(1-eff(b))+(unlocked(b)?0:.15);return sa-sb});
+ const t=topics[0],want=mem[t]<.4?1:mem[t]<.7?2:3;
+ return left.filter(i=>Q[i][4]===t).sort((a,b)=>Math.abs(Q[a][3]-want)-Math.abs(Q[b][3]-want))[0]}
+function nextQ(){const b=$('#qbox');b.textContent='';const i=pick();
+ if(i==null){cur=null;b.append(mk('p','No more unseen questions in this scope.'));if(sess.length){sessionReport(b,sess.map(x=>[x[0],x[1],true,x[2]]));sess=[]}scope=null;return}
+ cur=i;answered=false;const q=Q[i];
+ b.append(diagOn?mk('span','Diagnostic','tag'):'',mk('span',T[q[4]],'tag'),mk('span','Difficulty '+q[3]+'/3','tag'),mk('span','Source: '+loc(q[5]),'tag'),mk('span',vlabel(i),'tag'),mk('h3',q[0]));
+ if(q[7]){const inp=document.createElement('input');inp.type='text';inp.setAttribute('aria-label','Your answer');inp.placeholder=q[7]==='num'?'Type a number':'Type a short answer';inp.style.cssText='font:inherit;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin-right:8px';const go=mk('button','Check','btn');go.onclick=()=>{if(!inp.value.trim()||answered)return;lastTxt=inp.value;answer(0,b,chk(q,inp.value))};b.append(inp,go)}else q[1].forEach((o,k)=>{const x=mk('button',o,'opt');x.onclick=()=>answer(k,b);b.append(x)});}
+function answer(k,b,okv){if(answered)return;answered=true;const q=Q[cur],ok=okv!==undefined?okv:k===q[2];bkt(q[4],ok,q,diagOn?'diag':'quiz');used.add(cur);hist.push([q[4],ok]);sess.push([cur,ok,q[7]?lastTxt:k]);
+ if(!ok)miscon[q[6]]=(miscon[q[6]]||0)+1;
+ [...b.querySelectorAll('.opt')].forEach((x,j)=>{if(j===q[2])x.classList.add('right');else if(j===k)x.classList.add('wrong')});
+ b.append(mk('p',(ok?'Correct. ':'Not quite. ')+(q[7]&&!ok?'Answer: '+q[2]+'. ':'')+'Mastery of '+T[q[4]]+' is now '+Math.round(mem[q[4]]*100)+'%.'));
+ const f=mk('p');f.append(document.createTextNode('Why: '+C[q[5]][3]+' '),citeBtn(q[5]));b.append(f);
+ const n=mk('button','Next question','btn');n.onclick=nextQ;const fin=mk('button','Finish and see report','btn alt');fin.style.marginLeft='8px';fin.onclick=()=>{b.textContent='';sessionReport(b,sess.map(x=>[x[0],x[1],true,x[2]]));sess=[];scope=null;cur=null};b.append(n,fin);if(diagOn&&!diagQ.length)diagDone(b);
+ f.querySelector('.cite').onclick=()=>{document.querySelector('[data-t=chat]').click();view(q[5])}}
+
+/* dashboard */
+function dash(){const m=$('#mast');m.textContent='';
+ Object.keys(T).forEach(t=>{const r=mk('div',null,'mrow');const bar=mk('div',null,'bar');const i=mk('i');i.style.width=mem[t]*100+'%';bar.append(i);
+ r.append(mk('span',T[t]),bar,mk('span',Math.round(mem[t]*100)+'%','mut'));m.append(r)});
+ drawMap($('#map'));
+ const r=$('#rep');r.textContent='';const weak=Object.keys(T).sort((a,b)=>mem[a]-mem[b]).slice(0,2);
+ r.append(mk('p','Questions answered: '+hist.length+' · correct: '+hist.filter(h=>h[1]).length+' · repeated questions: 0'));
+ r.append(mk('p',hist.length?'Weakest topics: '+weak.map(t=>T[t]).join(', ')+'.':'Take the quiz to build your report. New learners start at 30% per topic and move after every answer.'));
+ const ms=Object.entries(miscon);if(ms.length){r.append(mk('h3','Likely misconceptions'));ms.forEach(([k,v])=>r.append(mk('p','• '+k+' ('+v+'×)')))}}
+/* revise */
+let fc=[],fi=0;
+const wk=()=>Object.keys(T).sort((a,b)=>mem[a]-mem[b]);
+function rev(){const weak=wk().slice(0,3);fc=Q.filter(q=>weak.includes(q[4]));fi=0;card();sched()}
+function card(){const b=$('#fc');b.textContent='';const q=fc[fi];
+ b.append(mk('span',T[q[4]],'tag'),mk('span',(fi+1)+' of '+fc.length,'tag'),mk('h3',q[0]));
+ const back=mk('div');back.hidden=true;back.append(mk('p','Answer: '+(q[7]?q[2]:q[1][q[2]])));back.append(citeBtn(q[5]));
+ const f=mk('button','Show answer','btn');f.onclick=()=>{back.hidden=!back.hidden;f.textContent=back.hidden?'Show answer':'Hide answer'};
+ const n=mk('button','Next card','btn alt');n.onclick=()=>{fi=(fi+1)%fc.length;card()};
+ const r=mk('div',null,'row');r.append(f,n);b.append(r,back);
+ back.querySelector('.cite').onclick=()=>{document.querySelector('[data-t=chat]').click();view(q[5])}}
+$('#exam').value=new Date(Date.now()+7*864e5).toISOString().slice(0,10);$('#exam').onchange=sched;
+function sched(){const o=$('#sch');o.textContent='';const days=Math.max(1,Math.min(14,Math.ceil((new Date($('#exam').value)-Date.now())/864e5)||7));
+ for(let d=1;d<=days;d++){const rk=Object.keys(T).map(t=>{const S=stab(t),rc=Math.exp(-d/S);return[t,(1-mem[t])*(1-rc),rc]}).sort((a,b)=>b[1]-a[1]).slice(0,2);
+  const p=mk('p');p.append(mk('b','Day '+d+': '),document.createTextNode(rk.map(x=>T[x[0]]+' (recall if skipped: '+Math.round(x[2]*100)+'%)').join(', ')));o.append(p)}}
+
+/* evaluation */
+const TS=[
+{q:'What is a stack?',refs:['s1'],type:'single-source'},{q:'What are stacks used for?',refs:['s2'],type:'single-source'},
+{q:'What is FIFO?',refs:['q1'],type:'single-source'},{q:'How does a circular queue reuse space?',refs:['q2'],type:'single-source'},
+{q:'Cost of inserting in the middle of an array?',refs:['a2'],type:'single-source'},{q:'What does a doubly linked list add?',refs:['l2'],type:'single-source'},
+{q:'Complexity of merge sort?',refs:['o1'],type:'single-source'},{q:'Bubble sort worst case?',refs:['o2'],type:'single-source'},
+{q:'Inorder traversal of a BST?',refs:['t2'],type:'single-source'},{q:'Search in a balanced binary search tree?',refs:['t1'],type:'single-source'},
+{q:'How do I reverse a linked list?',refs:['l3'],type:'single-source'},{q:'How is a postfix expression evaluated?',refs:['s3'],type:'single-source'},
+{q:'When is quick sort slow?',refs:['o3'],type:'single-source'},
+{q:'Compare linked list insertion and array insertion',refs:['l1','a2'],type:'multi-source'},
+{q:'What are the time complexities of merge sort and bubble sort?',refs:['o1','o2'],type:'multi-source'},
+{q:'How do stacks and queues differ?',refs:['s1','q1'],type:'multi-source'},
+{q:'How is an array stored in memory?',refs:['a1','a3'],type:'multi-source'},
+{q:'What is the search cost of a BST when balanced versus skewed?',refs:['t1','t2'],type:'multi-source'},
+{q:'Which structure undoes my last action?',refs:['s2'],type:'paraphrase'},
+{q:'What does first come first served mean in computing?',refs:['q1'],type:'paraphrase'},
+{q:'How many nodes can a full binary tree hold?',refs:['t3'],type:'paraphrase'},
+{q:'What does Big-O notation describe?',refs:['as1'],type:'single-source'},{q:'How does the Master Theorem solve recurrences?',refs:['dc2'],type:'single-source'},
+{q:'How does Huffman coding assign codes?',refs:['gr3'],type:'single-source'},{q:'What does the knapsack table store?',refs:['dp2'],type:'single-source'},
+{q:'How does Dijkstra find shortest paths?',refs:['gp2'],type:'single-source'},{q:'Why does the N-Queens solution backtrack?',refs:['bk2'],type:'single-source'},
+{q:'Compare memoization and tabulation',refs:['dp3'],type:'single-source'},{q:'Compare BFS and Dijkstra for shortest paths',refs:['gp1','gp2'],type:'multi-source'},
+{q:'Explain quantum entanglement',refs:[],type:'off-material'},{q:'Who won the 1998 World Cup?',refs:[],type:'off-material'},
+{q:'How does photosynthesis work?',refs:[],type:'off-material'},{q:'What is a hash table?',refs:[],type:'off-material'},
+{q:'Explain gradient descent',refs:[],type:'off-material'},{q:'What is the capital of France?',refs:[],type:'off-material'}];
+function ret(q){const r=retrieve(q);if(!r.length||r[0][1]<.34)return[];return r.filter(x=>x[1]>=r[0][1]*.6).slice(0,2).map(x=>x[0])}
+function rng(seed){return()=>(seed=(seed*1664525+1013904223)>>>0)/4294967296}
+const SWP=[['lifo','fifo'],['fifo','lifo'],['left','right'],['larger','smaller'],['top','bottom'],['rear','front'],['merge','bubble'],['sorted','random'],['contiguous','scattered']];
+const ctoks=t=>(t.toLowerCase().match(/[a-z0-9²]+/g)||[]).filter(w=>w.length>2&&!STOP2.has(w));
+function faithful(text,ids){const cs=new Set(ids.flatMap(id=>ctoks(C[id][3])));const sents=text.split(/(?<=[.!?])\s+/).filter(x=>x.trim());return sents.filter(x=>ctoks(x).every(w=>cs.has(w))).length/Math.max(sents.length,1)}
+function cosq(a,b){const A=tf(a),B=tf(b);let d=0,na=0,nb=0;Object.keys(A).forEach(k=>{na+=A[k]*A[k];if(B[k])d+=A[k]*B[k]});Object.values(B).forEach(v=>nb+=v*v);return d/(Math.sqrt(na*nb)||1)}
+function corrupt(t){for(const[x,y]of SWP){const re=new RegExp('\\b'+x+'\\b','i');if(re.test(t))return t.replace(re,y)}return null}
+const TK=['arr','ll','stk','que','tre','srt'];
+const PROF=[['Beginner',[.15,.15,.1,.1,.05,.1]],['Intermediate',[.5,.5,.45,.45,.4,.45]],['Strong',[.8,.8,.75,.75,.7,.75]],['Weak on trees',[.7,.65,.6,.55,.1,.6]],['Rusty basics',[.25,.5,.5,.5,.5,.55]]];
+function runSim(strategy){const pool=Q.map((q,i)=>i).filter(i=>TK.includes(Q[i][4])&&okq(i)),agg={true:0,est:0,rep:0,mae:0,weak:0,n:0},byP={};
+ PROF.forEach(([name,base],pi)=>{let tg=0;const S=8;
+  for(let s=0;s<S;s++){const rs=rng(1000+pi*100+s),ra=rng(5000+pi*100+s),rp=rng(9000+pi*100+s);
+   const sk={},m={},init={};TK.forEach((t,k)=>{sk[t]=Math.max(.02,Math.min(.95,base[k]+(rs()-.5)*.2));init[t]=sk[t];m[t]=.3});
+   const weakT=[...TK].sort((a,b)=>init[a]-init[b]).slice(0,2),seen=new Set();let tot=0,rep=0,onw=0;
+   for(let n=0;n<20;n++){let i,left=pool.filter(j=>!seen.has(j));
+    if(strategy==='adaptive'&&n<TK.length){const t=TK[n];i=left.filter(j=>Q[j][4]===t).sort((a,b)=>Q[a][3]-Q[b][3])[0]}
+    else if(strategy==='adaptive'){if(!left.length)left=pool;const un=t=>(PRE[t]||[]).every(p=>!m[p]||m[p]>=.35);
+     const ts=TK.filter(t=>left.some(j=>Q[j][4]===t)).sort((a,b)=>((1-m[a])+(un(a)?0:.15))-((1-m[b])+(un(b)?0:.15)));const t=ts[0],want=m[t]<.4?1:m[t]<.7?2:3;
+     i=left.filter(j=>Q[j][4]===t).sort((a,b)=>Math.abs(Q[a][3]-want)-Math.abs(Q[b][3]-want))[0]}
+    else if(strategy==='random'){i=pool[Math.floor(rp()*pool.length)]}
+    else{if(!left.length)left=pool;i=left[Math.floor(rp()*left.length)]}
+    const q=Q[i],t=q[4],d=q[3],g=q[7]?.05:[.3,.22,.15][d-1],sl=[.12,.1,.08][d-1];
+    const ok=ra()<g+(1-g)*Math.max(.02,Math.min(.98,sk[t]-(d-2)*.15)),p0=m[t];
+    const post=ok?p0*(1-sl)/(p0*(1-sl)+(1-p0)*g):p0*sl/(p0*sl+(1-p0)*(1-g));m[t]=Math.max(.02,Math.min(.98,post+(1-post)*.15));
+    const tgt=sk[t]<.4?1:sk[t]<.7?2:3,fit=Math.max(0,1-Math.abs(d-tgt)*.5);sk[t]=Math.min(.98,sk[t]+.05*(.3+.7*fit)*(seen.has(i)?.3:1));
+    tot++;if(seen.has(i))rep++;if(weakT.includes(t))onw++;seen.add(i)}
+   const avg=f=>TK.reduce((a,t)=>a+f(t),0)/TK.length,tgn=avg(t=>sk[t]-init[t]);
+   agg.true+=tgn;agg.est+=avg(t=>m[t]-.3);agg.mae+=avg(t=>Math.abs(m[t]-sk[t]));agg.rep+=rep/tot;agg.weak+=onw/tot;agg.n++;tg+=tgn}
+  byP[name]=tg/S});
+ const n=agg.n;return{true:agg.true/n,est:agg.est/n,rep:agg.rep/n,mae:agg.mae/n,weak:agg.weak/n,byP}}
+const pc=x=>Math.round(x*100)+'%';
+function barRow(c,l,v,note){const r=mk('div',null,'mrow');r.style.gridTemplateColumns='minmax(120px,1.3fr) 1fr 48px';const bar=mk('div',null,'bar'),i=mk('i');i.style.width=Math.max(0,Math.min(1,v))*100+'%';bar.append(i);r.append(mk('span',l),bar,mk('span',pc(v),'mut'));c.append(r);if(note)c.append(mk('p',note,'mut'))}
+function tbl(rows){const w=mk('div');w.style.overflowX='auto';const t=document.createElement('table');t.className='req';rows.forEach((r,k)=>{const tr=document.createElement('tr');r.forEach(x=>{const c=document.createElement(k?'td':'th');c.textContent=x;tr.append(c)});t.append(tr)});w.append(t);return w}
+$('#runev').onclick=()=>{const o=$('#evout');o.textContent='';const gq=genQs();const ans=TS.filter(x=>x.refs.length),off=TS.filter(x=>!x.refs.length);
+ let ap=0,rec=0,mrr=0,sp=0,sr=0,rel=0,fa=0,fc=0,fb=0,fbn=0,refuse=0,refOK=0;const mod={video:[0,0],slides:[0,0],book:[0,0]},rows=[['Query','Type','Expected','Top 3 retrieved','Served','Result']];
+ const L=ids=>ids.map(id=>C[id][2]).join(', ')||'none';
+ ans.forEach(x=>{const rk=retrieve(x.q).slice(0,5).map(y=>y[0]),fl=rk.map(id=>x.refs.includes(id));let h=0,a=0;fl.forEach((f,k)=>{if(f){h++;a+=h/(k+1)}});ap+=h?a/h:0;
+  rec+=x.refs.filter(id=>rk.includes(id)).length/x.refs.length;const fi=fl.indexOf(true);mrr+=fi<0?0:1/(fi+1);x.refs.forEach(id=>{const m=mod[ST[C[id][1]]];m[1]++;if(rk.includes(id))m[0]++});
+  const sv=ret(x.q);let res;if(!sv.length){refuse++;res='False refusal'}else{sp+=sv.filter(id=>x.refs.includes(id)).length/sv.length;sr+=x.refs.filter(id=>sv.includes(id)).length/x.refs.length;
+   const text=sv.map(id=>C[id][3]).join(' ');fa+=faithful(text,sv);rel+=cosq(x.q,text);fc++;const bad=corrupt(text);if(bad){fb+=faithful(bad,sv);fbn++}
+   res=x.refs.every(id=>sv.includes(id))?'Pass':sv.some(id=>x.refs.includes(id))?'Partial':'Miss'}
+  rows.push([x.q,x.type,L(x.refs),L(rk.slice(0,3)),L(sv),res])});
+ off.forEach(x=>{const sv=ret(x.q);if(!sv.length)refOK++;rows.push([x.q,x.type,'none','-',L(sv),sv.length?'Answered (should refuse)':'Refused'])});
+ const A=ans.length,c=mk('div',null,'card');c.append(mk('h2','Retrieval and generation (RAGAS-style metrics)'),mk('p','Test set: '+A+' answerable questions with known source locations (single-source, multi-source, paraphrased) and '+off.length+' off-material queries. Metrics follow the RAGAS definitions, computed here without an LLM judge.','mut'));
+ barRow(c,'Context precision (rank-aware, top 5)',ap/A);barRow(c,'Context recall (top 5)',rec/A);barRow(c,'Mean reciprocal rank',mrr/A);
+ barRow(c,'Served context precision',sp/Math.max(fc,1));barRow(c,'Served context recall',sr/Math.max(fc,1));
+ barRow(c,'Faithfulness (answers served)',fa/Math.max(fc,1),'Every content word of every answer sentence must appear in the retrieved contexts. Answers are extractive, so this is 100% by design.');
+ barRow(c,'Faithfulness control (corrupted answers)',fb/Math.max(fbn,1),'Sanity check: the same answers with one fact swapped (for example LIFO to FIFO), '+fbn+' cases. A working metric should drop sharply.');
+ barRow(c,'Answer relevancy (lexical proxy)',rel/Math.max(fc,1),'Cosine similarity of question and answer word vectors. RAGAS uses embeddings of questions regenerated from the answer; run the real metric for reportable numbers.');
+ barRow(c,'Correct refusals on off-material',refOK/off.length);barRow(c,'False refusals on answerable (lower is better)',refuse/A);
+ c.append(mk('h3','Recall by source type (top 5)'));Object.entries(mod).forEach(([k,v])=>{if(v[1])barRow(c,{video:'Lecture video',slides:'Slides',book:'Textbook'}[k]+' ('+v[1]+' references)',v[0]/v[1])});
+ c.append(mk('h3','Per-question results'),tbl(rows));o.append(c);
+ const R={adaptive:runSim('adaptive'),random:runSim('random'),norep:runSim('norep')},names={adaptive:'Adaptive with diagnostic (this system)',random:'Random with repeats',norep:'Random, no repeats'};
+ const d=mk('div',null,'card');d.append(mk('h2','Personalization: simulated students'),mk('p','5 profiles (beginner, intermediate, strong, weak on trees, rusty basics), 8 students each, 5 sessions of 4 questions. Every strategy faces the same students. Question bank used: '+Q.filter((q,i)=>TK.includes(q[4])&&okq(i)).length+' verified questions'+(gq.made?' (including '+gq.made+' generated just now, since 20 questions per student would nearly exhaust a small bank).':'.'),'mut'));
+ d.append(tbl([['Strategy','True skill gain','Estimated mastery gain','Repetition rate','Estimate error (MAE)','Questions on weakest topics']].concat(Object.keys(R).map(k=>[names[k],'+'+pc(R[k].true),'+'+pc(R[k].est),pc(R[k].rep),pc(R[k].mae),pc(R[k].weak)]))));
+ d.append(mk('h3','True skill gain by profile'),tbl([['Profile','Adaptive','Random with repeats','Random, no repeats']].concat(PROF.map(([n])=>[n,'+'+pc(R.adaptive.byP[n]),'+'+pc(R.random.byP[n]),'+'+pc(R.norep.byP[n])]))));
+ const df=R.adaptive.true-R.norep.true,wk=R.adaptive.weak-R.norep.weak;d.append(mk('p','Reading the table: '+(df>.005?'adaptive selection gained more skill than random without repeats':Math.abs(df)<=.005?'adaptive selection matched random without repeats on skill gain':'adaptive selection gained less skill than random without repeats')+' ('+(df>=0?'+':'')+pc(df)+' points), and it asked '+(wk>=0?'more':'fewer')+' questions on the weakest topics ('+pc(R.adaptive.weak)+' versus '+pc(R.norep.weak)+'). With only about 7 questions per topic and a mastery model that moves up after every answer, topic choice has little room to differ, so the clear wins are zero repetition and the diagnostic start. A larger question bank is the main thing to try next.'));
+ d.append(mk('p','Model assumptions: a simulated student answers correctly with a probability set by hidden skill and question difficulty, and gains the most skill when the question difficulty matches their level. Repeated questions teach less. Real students will differ, so treat this as a check that the selection logic behaves sensibly, not as evidence of learning gains.','mut'));o.append(d)};
+/* hindi, diagnostic, mock exam */
+const H={a1:'ऐरे में तत्व लगातार मेमोरी में रखे जाते हैं, इसलिए इंडेक्स से किसी तत्व को पढ़ना O(1) समय में होता है।',
+a2:'ऐरे के बीच में डालने या हटाने पर तत्वों को खिसकाना पड़ता है, जिसकी लागत O(n) है।',
+l1:'लिंक्ड लिस्ट नोड्स की एक श्रृंखला है, जिसमें हर नोड डेटा और अगले नोड का पॉइंटर रखता है। शुरुआत में जोड़ना O(1) है, पर खोजना O(n) है।',
+l2:'डबली लिंक्ड लिस्ट में next और prev दोनों पॉइंटर होते हैं, इसलिए दोनों दिशाओं में चला जा सकता है, पर ज़्यादा मेमोरी लगती है।',
+s1:'स्टैक LIFO का पालन करता है: जो सबसे बाद में आया, वह सबसे पहले निकलता है। Push और pop दोनों O(1) में होते हैं।',
+s2:'स्टैक का उपयोग फ़ंक्शन कॉल, अनडू और कोष्ठकों के संतुलन की जाँच में होता है।',
+q1:'क्यू FIFO का पालन करती है: जो पहले आया, वह पहले निकलता है। Enqueue पीछे जोड़ता है और dequeue आगे से हटाता है।',
+q2:'सर्कुलर क्यू मॉड्यूलो से रियर पॉइंटर को घुमाकर खाली हुई जगह दोबारा इस्तेमाल करती है।',
+t1:'बाइनरी सर्च ट्री में छोटी कुंजियाँ बाएँ और बड़ी दाएँ सबट्री में रहती हैं; संतुलित होने पर खोज O(log n) में होती है।',
+t2:'BST का इनऑर्डर ट्रैवर्सल नोड्स को क्रमबद्ध क्रम में देता है। झुके हुए ट्री में खोज O(n) तक बिगड़ जाती है।',
+o1:'मर्ज सॉर्ट ऐरे को आधे-आधे में बाँटता है, हर भाग को सॉर्ट करके मिलाता है, और हर स्थिति में O(n log n) समय लेता है।',
+o2:'बबल सॉर्ट बार-बार पास के गलत क्रम वाले तत्वों को बदलता है और सबसे बुरी स्थिति में O(n²) समय लेता है।'};
+let diagQ=[],diagOn=false,timer=null;
+const goSrc=id=>{document.querySelector('[data-t=chat]').click();view(id)};
+$('#prac').onclick=()=>{clearInterval(timer);cur=null;nextQ()};
+$('#diag').onclick=()=>{clearInterval(timer);diagQ=Object.keys(T).map(t=>Q.map((q,i)=>i).filter(i=>Q[i][4]===t&&!used.has(i)&&okq(i)).sort((a,b)=>Q[a][3]-Q[b][3])[0]).filter(i=>i!=null);cur=null;nextQ()};
+$('#mock').onclick=mockSetup;
+function mockSetup(){clearInterval(timer);cur=-1;const b=$('#qbox');b.textContent='';b.append(mk('h3','Mock exam: choose your scope'));
+ const sc=mk('div');Object.keys(T).forEach(t=>{const l=mk('label');const c=document.createElement('input');c.type='checkbox';c.checked=true;c.value=t;l.append(c,document.createTextNode(' '+T[t]));l.style.cssText='margin-right:14px;display:inline-block';sc.append(l)});b.append(subjRow(sc),sc);
+ const r=mk('div',null,'row');r.style.margin='10px 0';r.style.alignItems='center';
+ const n=document.createElement('input');n.type='number';n.min=2;n.max=12;n.value=6;n.id='mn';n.setAttribute('aria-label','Number of questions');
+ const mi=document.createElement('input');mi.type='number';mi.min=1;mi.max=60;mi.value=5;mi.id='mm';mi.setAttribute('aria-label','Minutes');
+ [n,mi].forEach(x=>x.style.cssText='width:80px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)');
+ const go=mk('button','Start exam','btn');go.onclick=()=>mockRun(sc);
+ r.append(mk('span','Questions'),n,mk('span','Minutes'),mi,go);b.append(r,mk('p','Questions you have already seen are not reused.','mut'))}
+function mockRun(sc){const ts=[...sc.querySelectorAll('input:checked')].map(x=>x.value);
+ const pool=Q.map((q,i)=>i).filter(i=>!used.has(i)&&okq(i)&&ts.includes(Q[i][4]));
+ const b=$('#qbox');if(!pool.length){b.append(mk('p','No unseen questions left in this scope. Pick other topics.'));return}
+ const set=pool.slice(0,+$('#mn').value||6);let left=(+$('#mm').value||5)*60;
+ b.textContent='';const tm=mk('p',null,'mut');b.append(tm);
+ set.forEach((i,k)=>{const q=Q[i];b.append(mk('span',T[q[4]],'tag'),mk('span','Difficulty '+q[3]+'/3','tag'),mk('h3',(k+1)+'. '+q[0]));
+  if(q[7]){const t=document.createElement('input');t.type='text';t.id='mt'+i;t.setAttribute('aria-label','Answer');t.style.cssText='font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)';b.append(t)}else q[1].forEach((o,j)=>{const l=mk('label');l.style.display='block';const r=document.createElement('input');r.type='radio';r.name='mq'+i;r.value=j;l.append(r,document.createTextNode(' '+o));b.append(l)})});
+ const fin=mk('button','Submit exam','btn');fin.style.marginTop='12px';b.append(fin);
+ const draw=()=>{tm.textContent='Time left '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0')};draw();
+ let done=false;const submit=()=>{if(done)return;done=true;clearInterval(timer);mockReport(set,b)};
+ timer=setInterval(()=>{left--;draw();if(left<=0)submit()},1000);fin.onclick=submit}
+function mockReport(set,b){const res=set.map(i=>{const q=Q[i];let ch=-1,ok=false;if(q[7]){const v=b.querySelector('#mt'+i).value.trim();if(v){ch=v;ok=chk(q,v)}}else{const c=b.querySelector('input[name=mq'+i+']:checked');if(c){ch=+c.value;ok=ch===q[2]}}return[i,ch,ok]});
+ b.textContent='';
+ res.forEach(([i,ch,ok])=>{const q=Q[i];used.add(i);hist.push([q[4],ok]);if(ch!==-1)bkt(q[4],ok,q,'mock');if(!ok&&ch!==-1)miscon[q[6]]=(miscon[q[6]]||0)+1});
+ sessionReport(b,res.map(([i,ch,ok])=>[i,ok,ch!==-1,ch]));
+ const again=mk('button','Build another exam','btn alt');again.onclick=mockSetup;b.append(again)}
+/* more material, assessments, lecture and textbook viewer */
+Object.assign(C,{
+l3:['ll','ds_l3','08:30','To reverse a singly linked list, walk through it once and flip each next pointer to point to the previous node, which takes O(n) time and O(1) extra space.'],
+s3:['stk','ds_l3','16:05','Evaluating a postfix expression uses a stack: push operands, and on each operator pop two values, apply it, and push the result.'],
+t3:['tre','book','Page 142','A full binary tree of height h has at most 2^(h+1) - 1 nodes, counting the root as height 0.'],
+o3:['srt','ds_l3','38:20','Quick sort picks a pivot and partitions the array around it. Average time is O(n log n), but a bad pivot gives a worst case of O(n²).'],
+a3:['arr','ds_l2','Slide 5','A two-dimensional array in C is stored in row-major order, so the address of element (i, j) is base + (i × columns + j) × size.']});
+Object.assign(H,{l3:'सिंगल लिंक्ड लिस्ट को उलटने के लिए उसे एक बार पार करें और हर next पॉइंटर को पिछले नोड की ओर मोड़ दें; इसमें O(n) समय और O(1) अतिरिक्त जगह लगती है।',
+s3:'पोस्टफ़िक्स व्यंजक का मान स्टैक से निकाला जाता है: ऑपरेंड push करें, और हर ऑपरेटर पर दो मान pop करके गणना करें और परिणाम push कर दें।',
+t3:'ऊँचाई h वाले पूर्ण बाइनरी ट्री में अधिकतम 2^(h+1) - 1 नोड हो सकते हैं।',
+o3:'क्विक सॉर्ट एक पिवट चुनकर ऐरे को उसके चारों ओर बाँटता है; औसत समय O(n log n) है, पर खराब पिवट होने पर सबसे बुरी स्थिति O(n²) है।',
+a3:'C में दो-आयामी ऐरे row-major क्रम में रखी जाती है, इसलिए पता = base + (i × columns + j) × size होता है।'});
+Q.push(
+['How much extra space does reversing a singly linked list need?',['O(n)','O(1)','O(log n)','O(n²)'],1,2,'ll','l3','Assuming reversal needs a copy of the list'],
+['On reading an operator in a postfix expression, you...',['Push it','Pop two values and apply it','Dequeue two values','Sort the stack'],1,2,'stk','s3','Treating operators like operands'],
+['Quick sort hits its worst case when...',['Pivots split the array evenly','A bad pivot is chosen','The array has 2 items','n is even'],1,3,'srt','o3','Believing quick sort is always O(n log n)'],
+['A 2D array has 4 columns (row-major, 0-indexed). Offset in elements of cell (2, 3)?',[],11,2,'arr','a3','Mixing up row and column in the address formula','num'],
+['Maximum nodes in a full binary tree of height 3 (root at height 0)?',[],15,2,'tre','t3','Forgetting the +1 in 2^(h+1) - 1','num'],
+['How many shifts does inserting at the front of a 1000-element array need in the worst case?',[],1000,2,'arr','a2','Treating arrays like linked lists','num'],
+['Merge sort halves 8 items repeatedly. How many levels of halving until single items?',[],3,2,'srt','o1','Mixing up n and log n','num'],
+['A circular queue has 5 slots and rear is at index 4. After one enqueue, what is rear?',[],0,3,'que','q2','Not applying modulo wrap-around','num'],
+['Push 3, 5, 7 then pop once. What value is on top?',[],5,1,'stk','s1','Mixing up LIFO and FIFO','num'],
+['What does a stack follow? Give the acronym.',[],'LIFO',2,'stk','s1','Mixing up LIFO and FIFO','short',['lifo','last in']],
+['Which BST traversal visits keys in sorted order?',[],'Inorder',2,'tre','t2','Mixing up traversal orders','short',['inorder','in-order','in order']],
+['Which extra pointer does a doubly linked list keep?',[],'prev',2,'ll','l2','Missing the memory trade-off','short',['prev','previous']]);
+const chk=(q,v)=>q[7]==='num'?Math.abs(parseFloat(v)-q[2])<1e-9:q[8].some(w=>v.toLowerCase().includes(w));
+const F={a1:'memory cells 0 to n-1 drawn side by side with index labels',l2:'nodes joined by two arrows, next and prev',t1:'tree diagram with 8 at the root, 3 on the left and 10 on the right'};
+const secs=t=>t.split(':').reduce((a,b)=>a*60+ +b,0),mmss=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
+let kind='slides';
+function matRender(){const tr=$('#tr');tr.textContent='';
+ Object.entries(C).filter(([i,c])=>ST[c[1]]==='video').sort((a,b)=>secs(a[1][2])-secs(b[1][2])).forEach(([id,c])=>{const r=mk('div',null,'urow');r.id='u-'+id;const b=mk('button',c[2],'cite');b.onclick=()=>openAt(id);r.append(b,document.createTextNode(' '+c[3]));tr.append(r)});matList()}
+function matList(){const l=$('#ml');l.textContent='';
+ Object.entries(C).filter(([i,c])=>ST[c[1]]===kind).sort((a,b)=>parseInt(a[1][2].replace(/\D/g,''))-parseInt(b[1][2].replace(/\D/g,''))).forEach(([id,c])=>{const r=mk('div',null,'urow');r.id='u-'+id;r.append(mk('b',c[2]+': '),document.createTextNode(c[3]));const fg=FIG[id];if(fg){r.append(mk('div','Figure text extracted: '+(fg.alt||'image without alt text'),'mut'));if(fg.img){const im=document.createElement('img');im.src=fg.img;im.alt=fg.alt||'Slide figure';im.style.cssText='max-width:160px;max-height:100px;display:block;border-radius:6px';r.append(im)}};l.append(r)})}
+$('#ks').onclick=()=>{kind='slides';matList()};$('#kb').onclick=()=>{kind='book';matList()};
+function openAt(id){const c=C[id];if(ST[c[1]]!=='video')kind=ST[c[1]];document.querySelector('[data-t=mat]').click();
+ if(ST[c[1]]==='video'){const t=secs(c[2]),v=$('#vid');$('#clock').textContent='Playing from '+c[2]+' (transcript highlighted)';if(!v.hidden){v.currentTime=t;const p=v.play();if(p)p.catch(()=>{})}}
+ document.querySelectorAll('.urow').forEach(r=>r.classList.remove('hl'));const e=$('#u-'+id);if(e){e.classList.add('hl');e.scrollIntoView({block:'center'})}}
+$('#vf').onchange=e=>{const f=e.target.files[0];if(!f)return;const v=$('#vid');v.src=URL.createObjectURL(f);v.hidden=false;$('#vph').hidden=true;v.onerror=()=>{v.hidden=true;$('#vph').hidden=false;$('#clock').textContent='This browser blocked the file here. Timestamps still highlight the transcript.'}};
+/* knowledge base: ingestion, tagging, topics, prerequisites */
+const FIG={},CT={},CS={},SW={},ST={ds_l2:'slides',ds_l3:'video',book:'book'};let DF={},upn=0,nk=0;
+Object.keys(F).forEach(k=>FIG[k]={alt:F[k]});
+const STOP2=new Set([...STOP,...'this that with from are can its each also into than then they their have has will when where which both such more most used uses using one two all any may not but for you your our was were been being these those other some only over while about after before given'.split(' ')]);
+const tf=t=>{const m={};(t.toLowerCase().match(/[a-z][a-z0-9+\-]{2,}/g)||[]).forEach(w=>{if(STOP2.has(w))return;const k=stem(w);SW[k]=SW[k]&&SW[k].length<=w.length?SW[k]:w;m[k]=(m[k]||0)+1});return m};
+const keyStems=(t,k)=>{const N=Object.keys(C).length+1;return Object.entries(tf(t)).map(([w,c])=>[w,c*(Math.log(N/(DF[w]||1))+1)]).sort((a,b)=>b[1]-a[1]).slice(0,k).map(x=>x[0])};
+function tagAll(){DF={};Object.keys(C).forEach(id=>Object.keys(tf(C[id][3])).forEach(w=>DF[w]=(DF[w]||0)+1));
+ Object.keys(C).forEach(id=>{CS[id]=keyStems(C[id][3],3);CT[id]=CS[id].map(w=>SW[w])})}
+const prof=t=>{const m={};Object.keys(C).filter(i=>C[i][0]===t).forEach(i=>(CS[i]||[]).forEach(w=>m[w]=(m[w]||0)+1));return m};
+function assignTopic(text){const st=keyStems(text,5);let best=null,bs=0;
+ Object.keys(T).forEach(t=>{const p=prof(t);const sc=st.filter(w=>p[w]).length/Math.max(st.length,1);if(sc>bs){bs=sc;best=t}});
+ if(best&&bs>=.3)return best;const k='n'+(++nk);T[k]=(SW[st[0]]||'New topic').replace(/^./,c=>c.toUpperCase());mem[k]=.3;POS[k]=[20+((nk-1)%3)*100,330+Math.floor((nk-1)/3)*45];return k}
+function inferPre(keys){const all=Object.keys(T);keys.forEach(k=>{const pk=prof(k);let b=null,bn=0;all.slice(0,all.indexOf(k)).forEach(o=>{const po=prof(o),n=Object.keys(pk).filter(w=>po[w]).length;if(n>bn){bn=n;b=o}});if(b)PRE[k]=[b]})}
+function addUnits(key,type,units){const ids=[];let n=0;ST[key]=type;
+ units.forEach(u=>{if(u.text.trim().length<25)return;const id=key+'_'+(++n);const t=assignTopic(u.text);C[id]=[t,key,u.loc,u.text.trim()];if(u.fig)FIG[id]=u.fig;CS[id]=keyStems(u.text,3);CT[id]=CS[id].map(w=>SW[w]);ids.push(id)});return ids}
+function autoQuiz(ids){let n=0;ids.slice(0,3).forEach(id=>{const c=C[id],w=CT[id][0];if(!w||!new RegExp(w,'i').test(c[3]))return;
+ Q.push(['Auto-generated, unverified. Fill in the blank: '+c[3].replace(new RegExp(w,'i'),'_____'),[],w,2,c[0],id,'Missed a key concept ('+w+') from '+loc(id),'short',[w.toLowerCase(),stem(w)]]);n++});return n}
+const decode=t=>t.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+function parseCues(txt){const re=/(?:(\d+):)?(\d{1,2}):(\d{2})[.,]\d{1,3}\s*-->[^\n]*\n([\s\S]*?)(?=\n\s*\n|$)/g;let m;const segs=[];
+ while(m=re.exec(txt)){const sec=(+m[1]||0)*3600+ +m[2]*60+ +m[3],t=m[4].replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),l=segs[segs.length-1];if(l&&sec-l.s<40)l.t+=' '+t;else segs.push({s:sec,t})}
+ return segs.map(x=>({loc:mmss(x.s),text:x.t}))}
+function parsePages(txt){let pages=txt.includes('\f')?txt.split('\f'):[];if(!pages.length){let cur='';txt.split(/\n\s*\n/).forEach(p=>{cur+=(cur?'\n':'')+p;if(cur.length>350){pages.push(cur);cur=''}});if(cur)pages.push(cur)}
+ return pages.map((t,i)=>({loc:'Page '+(i+1),text:t.replace(/\s+/g,' ')}))}
+async function parsePptx(f){const z=await JSZip.loadAsync(f),out=[];
+ const names=Object.keys(z.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a,b)=>parseInt(a.match(/\d+/)[0])-parseInt(b.match(/\d+/)[0]));
+ for(const n of names){const num=n.match(/\d+/)[0],xml=await z.file(n).async('string');
+  let text=decode([...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m=>m[1]).join(' '));const alt=decode([...xml.matchAll(/descr="([^"]+)"/g)].map(m=>m[1]).join('; '));
+  let img=null;const rel=z.file('ppt/slides/_rels/slide'+num+'.xml.rels');
+  if(rel){const m=(await rel.async('string')).match(/Target="\.\.\/media\/([^"]+\.(png|jpe?g|gif))"/i);if(m){const mf=z.file('ppt/media/'+m[1]);if(mf){const b=await mf.async('base64');if(b.length<400000)img='data:image/'+m[2].toLowerCase().replace('jpg','jpeg')+';base64,'+b}}}
+  const fig=alt||img?{alt,img}:null;if(!text.trim()&&alt)text='Figure: '+alt;out.push({loc:'Slide '+num,text,fig})}
+ return out}
+async function parsePdf(f){const doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,out=[];
+ for(let p=1;p<=Math.min(doc.numPages,60);p++){const tc=await(await doc.getPage(p)).getTextContent();out.push({loc:'Page '+p,text:tc.items.map(i=>i.str).join(' ').replace(/\s+/g,' ')})}return out}
+const JSZ='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',PDFJ='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFW='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const loadLib=u=>new Promise((res,rej)=>{if(document.querySelector('script[src="'+u+'"]'))return res();const e=document.createElement('script');e.src=u;e.onload=res;e.onerror=()=>rej(new Error('library blocked'));document.head.append(e)});
+async function ingestFile(f){const ext=f.name.split('.').pop().toLowerCase(),li=mk('li',f.name+': reading');$('#pipe').append(li);const key='up'+(++upn);
+ try{let units,type;
+  if(f.type.startsWith('video/')||ext==='mp4'){const v=$('#vid');v.src=URL.createObjectURL(f);v.hidden=false;$('#vph').hidden=true;li.textContent=f.name+': attached to the lecture player. Transcribing needs a speech model on the backend, so add its .srt or .vtt to index it.';return}
+  S[key]=f.name;
+  if(ext==='srt'||ext==='vtt'){type='video';units=parseCues(await f.text())}
+  else if(ext==='txt'||ext==='md'){type='book';units=parsePages(await f.text())}
+  else if(ext==='pptx'){type='slides';await loadLib(JSZ);units=await parsePptx(f)}
+  else if(ext==='pdf'){type='book';await loadLib(PDFJ);pdfjsLib.GlobalWorkerOptions.workerSrc=PDFW;units=await parsePdf(f)}
+  else throw new Error('unsupported type');
+  const before=Object.keys(T);const ids=addUnits(key,type,units);if(!ids.length)throw new Error('no readable text found');
+  tagAll();const nt=Object.keys(T).filter(t=>!before.includes(t));inferPre(nt);const q=autoQuiz(ids),fg=ids.filter(i=>FIG[i]).length;
+  li.textContent=f.name+': '+ids.length+' units with source locations, '+nt.length+' new topics, '+fg+' figures, '+q+' auto-generated questions';tchips();srcs()}
+ catch(e){delete S[key];li.textContent=f.name+': could not ingest ('+e.message+')'}}
+$('#fin').onchange=async e=>{$('#pipe').textContent='';for(const f of e.target.files)await ingestFile(f)};
+function showUnits(f,title){const u=$('#units');u.textContent='';u.append(mk('h3',title));
+ Object.keys(C).filter(f).forEach(id=>{const c=C[id],p=mk('div',null,'urow');
+  p.append(mk('span',{video:'Video',slides:'Slide',book:'Textbook'}[ST[c[1]]],'tag'),mk('span',loc(id),'tag'),mk('span',T[c[0]],'tag'));
+  (CT[id]||[]).forEach(w=>p.append(mk('span','#'+w,'tag')));p.append(mk('div',c[3]));
+  const fg=FIG[id];if(fg){p.append(mk('div','Figure: '+(fg.alt||'image on this slide (a vision model would caption it)'),'mut'));if(fg.img){const im=document.createElement('img');im.src=fg.img;im.alt=fg.alt||'Slide figure';im.style.cssText='max-width:180px;max-height:120px;border-radius:6px;margin-top:4px;display:block';p.append(im)}}
+  const o=mk('button','Open source','chip');o.onclick=()=>openAt(id);p.append(o);u.append(p)})}
+function tchips(){const d=$('#tchips');d.textContent='';
+ Object.entries(T).forEach(([k,v])=>{if(subjF!=='All'&&subjOf(k)!==subjF)return;const b=mk('button',v+(PRE[k]?' ← '+PRE[k].map(p=>T[p]).join(', '):''),'chip');b.onclick=()=>showUnits(id=>C[id][0]===k,v);d.append(b)});
+ const ci=$('#cidx');ci.textContent='';const cnt={};Object.keys(C).filter(id=>subjF==='All'||subjOf(C[id][0])===subjF).forEach(id=>(CT[id]||[]).forEach(w=>(cnt[w]=cnt[w]||[]).push(id)));
+ Object.entries(cnt).sort((a,b)=>b[1].length-a[1].length).slice(0,24).forEach(([w,ids])=>{const b=mk('button',w+' ('+ids.length+')','chip');b.onclick=()=>showUnits(id=>ids.includes(id),'Concept: '+w);ci.append(b)})}
+
+let page='home';
+function go(p){page=p;['home','app','docs'].forEach(x=>{$('#p-'+x).classList.toggle('on',x===p);$('#sn-'+x).setAttribute('aria-current',x===p?'page':'false')});window.scrollTo(0,0);try{history.replaceState(null,'','#'+p)}catch(e){}}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+document.querySelectorAll('[data-demo]').forEach(b=>b.addEventListener('click',()=>{go('app');document.querySelector('[data-t=chat]').click();ask(b.dataset.demo)}));
+const h0=(location.hash||'').slice(1);go(['home','app','docs'].includes(h0)?h0:'home');
+const OUT=[[/hash/i,'A hash table maps keys to array positions using a hash function, so average lookup is O(1). Collisions are handled by chaining or open addressing.'],
+[/\bgraphs?\b|vertex|vertices|\bedges?\b/i,'A graph is a set of vertices joined by edges. It can be directed or undirected and is usually stored as an adjacency list or matrix.'],
+[/recurs/i,'Recursion solves a problem by having a function call itself on smaller inputs until it reaches a base case.'],
+[/heap|priority queue/i,'A binary heap is a complete binary tree in which every parent is no larger than its children (min-heap), so the smallest item is at the root. It is the usual way to build a priority queue.'],
+[/entangle|quantum/i,'In physics, quantum entanglement links particles so that measuring one gives results correlated with the other, however far apart they are.']];
+function hl(text,qs){const f=document.createDocumentFragment();text.split(/([A-Za-z0-9+\-]+)/).forEach(t=>{if(t.length>2&&qs.includes(stem(t.toLowerCase()))){const m=mk('mark',t);m.style.cssText='background:var(--hl);color:inherit';f.append(m)}else f.append(document.createTextNode(t))});return f}
+function ctxNear(id,v){const src=C[id][1],k=x=>ST[src]==='video'?secs(C[x][2]):parseInt(C[x][2].replace(/\D/g,''))||0;
+ const l=Object.keys(C).filter(x=>C[x][1]===src).sort((a,b)=>k(a)-k(b)),i=l.indexOf(id);
+ [[l[i-1],'Just before'],[l[i+1],'Just after']].forEach(([x,lab])=>{if(x)v.append(mk('p',lab+' ('+C[x][2]+'): '+C[x][3].slice(0,90)+'...','mut'))})}
+/* assessment: scope, generation, verification, reports */
+let scope=null,sess=[],lastTxt='';const VR={},GEN=new Set();
+const VN={a3:()=>2*4+3,t3:()=>2**(3+1)-1,a2:()=>1000,o1:()=>Math.log2(8),q2:()=>(4+1)%5,s1:()=>{const st=[3,5,7];st.pop();return st[st.length-1]}};
+const norm=x=>x.toLowerCase().replace(/[^a-z0-9()^²]/g,''),tk4=x=>(x.toLowerCase().match(/[a-z0-9]{3,}/g)||[]).filter(w=>!STOP2.has(w)).map(w=>w.slice(0,4));
+function verify(q){const src=C[q[5]][3],st=new Set(tk4(src)),ns=norm(src),cov=t=>{const a=tk4(t);return a.length?a.filter(w=>st.has(w)).length/a.length:null};
+ if(q[7]==='num'){const f=VN[q[5]];if(!f)return{level:'part',checks:[['recompute independently',false]]};const p=Math.abs(f()-q[2])<1e-9;return{level:p?'ok':'fail',checks:[['recompute independently',p],['source is cited',true]]}}
+ if(q[7]==='short'){const p=q[8].some(w=>src.toLowerCase().includes(w));return{level:p?'ok':'fail',checks:[['answer appears in cited source',p]]}}
+ const key=q[1][q[2]],cv=cov(key),c1=cv===null?ns.includes(norm(key)):(cv>=.6||ns.includes(norm(key)));
+ const sc=q[1].map(o=>(norm(o).length>=3&&ns.includes(norm(o))?2:0)+(cov(o)||0)),mx=Math.max(...sc),c2=sc.filter(x=>x===mx).length===1&&sc[q[2]]===mx;
+ return{level:c1&&c2?'ok':(c1||c2)?'part':'fail',checks:[['key is supported by the cited source',c1],['independent solver picks the same option',c2]]}}
+const vr=i=>VR[i]||(VR[i]=verify(Q[i])),okq=i=>vr(i).level!=='fail';
+const vlabel=i=>{const v=vr(i),n=v.checks.filter(c=>c[1]).length;return v.level==='ok'?'Verified ('+n+'/'+v.checks.length+' checks)':v.level==='part'?'Partly verified ('+n+'/'+v.checks.length+')':'Needs review'};
+const inScope=i=>!scope||(scope.topics.includes(Q[i][4])&&scope.types.includes(Q[i][7]||'mcq')&&(!scope.diff||Q[i][3]===scope.diff));
+const jac=(a,b)=>{const A=new Set(tok(a).map(stem)),B=new Set(tok(b).map(stem));let n=0;A.forEach(w=>B.has(w)&&n++);return n/(A.size+B.size-n||1)};
+function genQs(){let made=0,dup=0,bad=0;const labels=[...new Set(Object.keys(C).flatMap(id=>CT[id]||[]))];
+ Object.keys(C).forEach(id=>{if(GEN.has(id))return;GEN.add(id);const c=C[id],w=(CT[id]||[])[0];if(!w||c[3].length<40)return;const re=new RegExp('\\b'+w+'\\w*','i');if(!re.test(c[3]))return;
+  const text='Fill in the blank: '+c[3].replace(re,'_____');if(Q.some(q=>jac(q[0],text)>=.7)){dup++;return}
+  const r=rng([...id].reduce((a,ch)=>(a*31+ch.charCodeAt(0))|0,7)>>>0),sw=stem(w.toLowerCase());
+  const ds=labels.filter(l=>stem(l.toLowerCase())!==sw&&!new RegExp('\\b'+l,'i').test(c[3])).filter((l,i,a)=>l.slice(0,4)!==w.slice(0,4)&&a.findIndex(x=>x.slice(0,4)===l.slice(0,4))===i).sort(()=>r()-.5).slice(0,3);
+  const df=DF[sw]||1,diff=df<=1?3:df<=2?2:1;let row;
+  if(ds.length<3)row=[text,[],w,diff,c[0],id,'Missed the key concept "'+w+'"','short',[w.toLowerCase(),sw]];
+  else{const o=[...ds,w].sort(()=>r()-.5);row=[text,o,o.indexOf(w),diff,c[0],id,'Confused "'+w+'" with a related concept']}
+  Q.push(row);made++;if(!okq(Q.length-1))bad++});
+ return{made,dup,bad}}
+function sessionReport(b,res){const bt={};res.forEach(([i,ok])=>{const t=Q[i][4];bt[t]=bt[t]||[0,0];bt[t][1]++;if(ok)bt[t][0]++});
+ b.append(mk('h3','Score: '+res.filter(x=>x[1]).length+' / '+res.length));
+ const weak=Object.entries(bt).filter(([t,v])=>v[0]/v[1]<.6||mem[t]<.5).sort((a,c)=>mem[a[0]]-mem[c[0]]).map(x=>x[0]);
+ Object.entries(bt).forEach(([t,v])=>b.append(mk('p',T[t]+': '+v[0]+' of '+v[1]+' correct, mastery '+Math.round(mem[t]*100)+'%'+(weak.includes(t)?' (weak)':''))));
+ b.append(mk('h3','Weak topics'),mk('p',weak.length?weak.map(t=>T[t]).join(', ')+'. Revise these next using flashcards and the schedule in the Revise tab.':'None. Every topic here is above 60% correct with mastery above 50%.'));
+ const mc={};res.filter(x=>!x[1]&&x[2]).forEach(([i])=>{(mc[Q[i][6]]=mc[Q[i][6]]||[]).push(i)});
+ b.append(mk('h3','Likely misconceptions'));if(!Object.keys(mc).length)b.append(mk('p','None detected.'));
+ Object.entries(mc).forEach(([m,ids])=>{const p=mk('p','• '+m+' ('+ids.length+'×) '),c=citeBtn(Q[ids[0]][5]);c.onclick=()=>goSrc(Q[ids[0]][5]);p.append(c);b.append(p)});
+ b.append(mk('h3','Question review'));
+ res.forEach(([i,ok,ans,ch])=>{const q=Q[i],p=mk('p');p.append(mk('b',ok?'Correct: ':ans?'Wrong: ':'Unanswered: '),document.createTextNode(q[0]+' '+(ans&&!ok?'You answered '+(q[7]?ch:q[1][ch])+'. ':'')+'Answer: '+(q[7]?q[2]:q[1][q[2]])+'. '+C[q[5]][3]+' '));
+  const c=citeBtn(q[5]);c.onclick=()=>goSrc(q[5]);p.append(c,mk('span',' '+T[q[4]]+', difficulty '+q[3]+'/3','mut'));b.append(p)})}
+function chkRow(list,label,val){const l=mk('label');l.style.cssText='margin-right:14px;display:inline-block';const c=document.createElement('input');c.type='checkbox';c.checked=true;c.value=val;l.append(c,document.createTextNode(' '+label));list.append(l)}
+function customSetup(){clearInterval(timer);cur=-1;const b=$('#qbox');b.textContent='';b.append(mk('h3','Custom quiz: choose your scope'));
+ const tl=mk('div'),yl=mk('div');Object.entries(T).forEach(([k,v])=>chkRow(tl,v,k));[['Multiple choice','mcq'],['Short answer','short'],['Numerical','num']].forEach(([l,v])=>chkRow(yl,l,v));
+ const df=document.createElement('select');[['Any difficulty',0],['Easy (1)',1],['Medium (2)',2],['Hard (3)',3]].forEach(([l,v])=>{const o=document.createElement('option');o.value=v;o.textContent=l;df.append(o)});
+ const n=document.createElement('input');n.type='number';n.min=1;n.max=20;n.value=6;n.setAttribute('aria-label','Number of questions');[df,n].forEach(x=>x.style.cssText='font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:auto');
+ const go=mk('button','Start quiz','btn');go.onclick=()=>{const g=l=>[...l.querySelectorAll('input:checked')].map(x=>x.value);scope={topics:g(tl),types:g(yl),diff:+df.value,count:+n.value||6};sess=[];cur=null;nextQ()};
+ const r=mk('div',null,'row');r.style.cssText='margin:10px 0;align-items:center';r.append(df,mk('span','Questions'),n,go);
+ b.append(mk('p','Topics','mut'),subjRow(tl),tl,mk('p','Question types','mut'),yl,r,mk('p','You get cited feedback after each answer and a report at the end. Questions you have already seen are not reused.','mut'))}
+function bank(){const d=$('#bank');if(d.textContent){d.textContent='';return}
+ const t=document.createElement('table');t.className='req';[['Question','Type','Topic','Level','Source','Check']].concat(Q.map((q,i)=>[q[0].slice(0,70)+(q[0].length>70?'...':''),{num:'Numerical',short:'Short'}[q[7]]||'MCQ',T[q[4]],q[3]+'/3',loc(q[5]),vlabel(i)])).forEach((r,k)=>{const tr=document.createElement('tr');r.forEach(x=>{const c=document.createElement(k?'td':'th');c.textContent=x;tr.append(c)});if(k)tr.title=vr(k-1).checks.map(c=>(c[1]?'Pass: ':'Fail: ')+c[0]).join('. ');t.append(tr)});
+ const w=mk('div');w.style.overflowX='auto';w.append(mk('h3','Question bank ('+Q.length+' questions)'),mk('p','Questions marked Needs review are left out of every quiz. Hover a row for its checks.','mut'),t);d.append(w)}
+$('#cust').onclick=customSetup;$('#bk').onclick=bank;
+$('#gen').onclick=()=>{const r=genQs(),b=$('#qbox');b.textContent='';cur=-1;b.append(mk('p','Generated '+r.made+' new multiple-choice questions from your material. '+r.dup+' skipped as near-duplicates. '+r.bad+' failed verification and were excluded.'));b.append(mk('p','Each one is tagged with topic, source location and difficulty. Open the question bank to see them.','mut'))};
+$('#prac').addEventListener('click',()=>{scope=null});$('#diag').addEventListener('click',()=>{scope=null;sess=[]});
+/* learner model */
+const LM={},EV=[];let dayShift=0;
+const lm=t=>LM[t]||(LM[t]={n:0,last:null,hist:[[Date.now(),mem[t]]],asked:0,self:null});
+const stab=t=>1+8*mem[t],nowT=()=>Date.now()+dayShift*864e5;
+const recall=t=>{const x=lm(t);return x.last?Math.exp(-Math.max((nowT()-x.last)/864e5,0)/stab(t)):1};
+const eff=t=>mem[t]*(.4+.6*recall(t));
+function bkt(t,ok,q,kind){const d=q?q[3]:2,g=q&&q[7]?.05:[.3,.22,.15][d-1],sl=[.12,.1,.08][d-1],L=.15,p0=eff(t);
+ const post=ok?p0*(1-sl)/(p0*(1-sl)+(1-p0)*g):p0*sl/(p0*sl+(1-p0)*(1-g));
+ mem[t]=Math.max(.02,Math.min(.98,post+(1-post)*L));const x=lm(t);x.n++;x.last=nowT();x.hist.push([x.last,mem[t]]);
+ EV.unshift({ts:x.last,kind:kind||'quiz',t,ok,from:p0,to:mem[t]})}
+function chatEvent(t){const x=lm(t),p0=mem[t];x.asked++;mem[t]=Math.min(.95,p0+(1-p0)*.03);x.hist.push([nowT(),mem[t]]);EV.unshift({ts:nowT(),kind:'chat',t,from:p0,to:mem[t]})}
+const INT={'Never seen it':.1,'Heard of it':.3,'Comfortable':.6,'Confident':.8};
+function intake(){const box=$('#intake');box.textContent='';const ts=Object.keys(T);let i=0;const say=(m,c)=>box.append(mk('div',m,'m '+c));
+ say('Hi! A few quick questions so I can start in the right place. How comfortable are you with each topic?','b');
+ const next=()=>{if(i>=ts.length)return when();const t=ts[i];say('How comfortable are you with '+T[t]+'?','b');const r=mk('div',null,'row');
+  Object.keys(INT).forEach(o=>{const bt=mk('button',o,'chip');bt.onclick=()=>{r.remove();say(o,'u');const x=lm(t),f=mem[t];mem[t]=INT[o];x.self=o;x.hist.push([nowT(),mem[t]]);EV.unshift({ts:nowT(),kind:'intake',t,from:f,to:mem[t]});i++;lmRender();next()};r.append(bt)});box.append(r)};
+ const when=()=>{say('When is your exam?','b');const r=mk('div',null,'row');
+  [['This week',7],['In two weeks',14],['In a month',30],['No exam yet',0]].forEach(([l,d])=>{const bt=mk('button',l,'chip');bt.onclick=()=>{r.remove();say(l,'u');if(d)$('#exam').value=new Date(Date.now()+d*864e5).toISOString().slice(0,10);
+   say('Thanks. Your starting estimates are set'+(d?' and your study schedule uses that exam date':'')+'. Self-ratings are only a guess, so take the short diagnostic and I will adjust them.','b');
+   const go=mk('button','Start the diagnostic','btn');go.onclick=()=>{document.querySelector('[data-t=quiz]').click();$('#diag').click()};box.append(go)};r.append(bt)});box.append(r)};
+ next()}
+function diagDone(b){const rows=Object.keys(T).filter(t=>LM[t]&&LM[t].self);b.append(mk('h3','Diagnostic complete'));
+ b.append(mk('p',rows.length?'Here is how your self-ratings compare with the diagnostic.':'Your starting estimates now come from your answers. Keep practising to sharpen them.'));
+ rows.forEach(t=>b.append(mk('p',T[t]+': you said "'+LM[t].self+'" ('+Math.round(INT[LM[t].self]*100)+'%), the diagnostic now estimates '+Math.round(mem[t]*100)+'%.')))}
+function lmRender(){const d=$('#lmm');d.textContent='';
+ Object.keys(T).forEach(t=>{const x=lm(t),e=eff(t),R=recall(t),r=mk('div',null,'mrow'),bar=mk('div',null,'bar'),i=mk('i');i.style.width=e*100+'%';bar.append(i);
+  r.append(mk('span',T[t]),bar,mk('span',Math.round(e*100)+'%','mut'));d.append(r);
+  const conf=x.n<3?'low':x.n<6?'medium':'high';let due='not practised yet';
+  if(x.last){const dd=x.last+.357*stab(t)*864e5-nowT();due=dd<=0?'review due now':'review in '+Math.max(1,Math.round(dd/864e5))+' day'+(dd>1.5*864e5?'s':'')}
+  let line='Estimate '+Math.round(mem[t]*100)+'% · recall now '+Math.round(R*100)+'% · confidence '+conf+' ('+x.n+' answers) · '+due;
+  if(x.self)line+=' · self-rating: '+x.self;if(x.asked)line+=' · asked in chat '+x.asked+'×';
+  const p=mk('p',line,'mut');p.style.margin='0 0 6px';d.append(p);
+  if(x.asked>=3&&mem[t]<.5)d.append(mk('p','Struggling signal: you have asked about '+T[t]+' several times and mastery is low. Try its flashcards in the Revise tab.'))});
+ const l=$('#evl');l.textContent='';if(!EV.length)l.append(mk('p','No evidence yet. Answer a quiz question, ask a question in chat, or take the intake chat.','mut'));
+ EV.slice(0,12).forEach(e=>l.append(mk('p',{quiz:'Quiz',diag:'Diagnostic',mock:'Mock exam',chat:'Chat',intake:'Intake'}[e.kind]+' · '+T[e.t]+(e.ok===undefined?'':e.ok?' · correct':' · wrong')+' · '+Math.round(e.from*100)+'% to '+Math.round(e.to*100)+'%')))}
+$('#intk').onclick=intake;
+$('#clk').oninput=e=>{dayShift=+e.target.value;$('#clkl').textContent=dayShift?'In '+dayShift+' days':'Today';lmRender()};
+$('#rstt').onclick=()=>{Object.keys(T).forEach(t=>{mem[t]=.3;delete LM[t]});EV.length=0;hist.length=0;miscon={};used.clear();sess=[];scope=null;cur=null;dayShift=0;$('#clk').value=0;$('#clkl').textContent='Today';$('#intake').textContent='';$('#qbox').textContent='';lmRender()};
+/* DAA subject */
+Object.assign(T,{asy:'Asymptotic analysis',dac:'Divide and conquer',grd:'Greedy algorithms',dp:'Dynamic programming',grp:'Graph algorithms',bt:'Backtracking'});
+['asy','dac','grd','dp','grp','bt'].forEach(k=>mem[k]=.3);
+Object.assign(PRE,{dac:['asy','srt'],grd:['asy'],dp:['dac'],grp:['que','stk'],bt:['stk']});
+Object.assign(S,{daa1:'DAA_Lecture1.pptx',daa2:'DAA_Lecture2.mp4',daab:'DAA_Textbook.pdf'});Object.assign(ST,{daa1:'slides',daa2:'video',daab:'book'});
+const SUBJ={arr:'Data Structures',ll:'Data Structures',stk:'Data Structures',que:'Data Structures',tre:'Data Structures',srt:'Data Structures',asy:'DAA',dac:'DAA',grd:'DAA',dp:'DAA',grp:'DAA',bt:'DAA'};
+const subjOf=t=>SUBJ[t]||'Uploads';let subjF='All';
+Object.assign(C,{
+as1:['asy','daa1','Slide 4',"Big-O notation gives an upper bound on growth rate: f(n) is O(g(n)) if f(n) is at most c times g(n) for all large n."],
+as2:['asy','daab','Page 27',"Big-Omega gives a lower bound and Big-Theta gives a tight bound, so f(n) is Theta(g(n)) when it is both O(g(n)) and Omega(g(n))."],
+as3:['asy','daa2','05:50',"To analyse a loop, count how many times its body runs: a single loop over n items is O(n) and two nested loops over n items are O(n²)."],
+dc1:['dac','daa1','Slide 11',"Divide and conquer splits a problem into smaller subproblems, solves each recursively and combines their answers, with running time given by a recurrence such as T(n) = 2T(n/2) + O(n)."],
+dc2:['dac','daab','Page 94',"The Master Theorem solves recurrences of the form T(n) = aT(n/b) + f(n) by comparing f(n) with n raised to the power log base b of a."],
+dc3:['dac','daa2','14:20',"Binary search halves the sorted range at every step, so it needs at most log2(n) + 1 comparisons."],
+gr1:['grd','daa1','Slide 18',"A greedy algorithm builds a solution by always taking the locally best choice, and it is correct only when the problem has the greedy-choice property and optimal substructure."],
+gr2:['grd','daa2','22:35',"Activity selection sorts activities by finish time and repeatedly picks the next activity that starts after the last chosen one finishes."],
+gr3:['grd','daab','Page 131',"Huffman coding repeatedly merges the two least frequent symbols, giving frequent symbols shorter codes and producing an optimal prefix code."],
+dp1:['dp','daa1','Slide 24',"Dynamic programming solves overlapping subproblems once and stores their answers, which works when the problem has optimal substructure."],
+dp2:['dp','daa2','31:10',"The 0/1 knapsack table K[i][w] holds the best value using the first i items with capacity w, and takes O(nW) time to fill."],
+dp3:['dp','daab','Page 152',"Memoization stores results top-down as recursive calls return, while tabulation fills a table bottom-up, and both avoid recomputing subproblems."],
+gp1:['grp','daa1','Slide 30',"Breadth first search explores a graph level by level using a queue and finds shortest paths in unweighted graphs in O(V + E) time."],
+gp2:['grp','daa2','38:45',"Dijkstra's algorithm finds shortest paths from a source in a graph with non-negative edge weights by repeatedly settling the closest unsettled vertex."],
+gp3:['grp','daab','Page 201',"A minimum spanning tree connects all vertices with the least total edge weight, and Kruskal's algorithm builds it by adding the cheapest edge that creates no cycle."],
+bk1:['bt','daa1','Slide 36',"Backtracking builds a solution step by step and abandons a partial solution as soon as it cannot lead to a valid answer."],
+bk2:['bt','daa2','44:00',"The N-Queens problem places queens one row at a time and backtracks when a queen would be attacked by one already placed."],
+bk3:['bt','daab','Page 233',"Branch and bound prunes branches of the search tree whose bound cannot beat the best solution found so far."]});
+Object.assign(H,{
+as1:'बिग-ओ संकेतन वृद्धि दर की ऊपरी सीमा बताता है: f(n), O(g(n)) है यदि बड़े n के लिए f(n) अधिकतम c गुना g(n) हो।',
+as2:'बिग-ओमेगा निचली सीमा और बिग-थीटा सटीक सीमा देता है, इसलिए f(n), Theta(g(n)) तब होता है जब वह O(g(n)) और Omega(g(n)) दोनों हो।',
+as3:'लूप का विश्लेषण करने के लिए गिनें कि उसका भाग कितनी बार चलता है: n तत्वों पर एक लूप O(n) और दो नेस्टेड लूप O(n²) होते हैं।',
+dc1:'डिवाइड एंड कॉन्कर समस्या को छोटी उप-समस्याओं में बाँटता है, हर एक को रिकर्सिव रूप से हल करता है और उत्तर जोड़ता है; इसका समय T(n) = 2T(n/2) + O(n) जैसे रिकरेंस से मिलता है।',
+dc2:'मास्टर प्रमेय T(n) = aT(n/b) + f(n) जैसे रिकरेंस को f(n) की तुलना n की घात log base b of a से करके हल करता है।',
+dc3:'बाइनरी सर्च हर चरण में क्रमबद्ध सीमा को आधा कर देता है, इसलिए इसमें अधिकतम log2(n) + 1 तुलनाएँ लगती हैं।',
+gr1:'ग्रीडी एल्गोरिदम हमेशा स्थानीय रूप से सबसे अच्छा विकल्प चुनकर हल बनाता है, और यह तभी सही है जब समस्या में ग्रीडी-चॉइस गुण और ऑप्टिमल सबस्ट्रक्चर हो।',
+gr2:'एक्टिविटी सेलेक्शन गतिविधियों को समाप्ति समय के अनुसार क्रमबद्ध करता है और बार-बार वह अगली गतिविधि चुनता है जो पिछली चुनी गतिविधि के समाप्त होने के बाद शुरू हो।',
+gr3:'हफमैन कोडिंग बार-बार दो सबसे कम बारंबारता वाले प्रतीकों को मिलाती है, जिससे अधिक बार आने वाले प्रतीकों को छोटे कोड मिलते हैं और एक इष्टतम प्रीफ़िक्स कोड बनता है।',
+dp1:'डायनामिक प्रोग्रामिंग ओवरलैपिंग उप-समस्याओं को एक बार हल करके उनके उत्तर सहेजती है, जो तब काम करता है जब समस्या में ऑप्टिमल सबस्ट्रक्चर हो।',
+dp2:'0/1 नैपसैक तालिका K[i][w] पहली i वस्तुओं और क्षमता w के साथ सर्वश्रेष्ठ मान रखती है, और इसे भरने में O(nW) समय लगता है।',
+dp3:'मेमोइज़ेशन रिकर्सिव कॉल लौटते समय परिणाम ऊपर से नीचे सहेजता है, जबकि टेबुलेशन तालिका को नीचे से ऊपर भरता है, और दोनों उप-समस्याओं की दोबारा गणना से बचाते हैं।',
+gp1:'ब्रेडथ फर्स्ट सर्च ग्राफ़ को स्तर-दर-स्तर क्यू की मदद से खंगालता है और बिना भार वाले ग्राफ़ में O(V + E) समय में सबसे छोटे रास्ते खोजता है।',
+gp2:'डिज्क्स्ट्रा एल्गोरिदम गैर-ऋणात्मक भार वाले ग्राफ़ में स्रोत से सबसे छोटे रास्ते खोजता है, बार-बार सबसे नज़दीकी अनिश्चित शीर्ष को तय करके।',
+gp3:'न्यूनतम स्पैनिंग ट्री सभी शीर्षों को कम से कम कुल भार के साथ जोड़ता है, और क्रुस्कल का एल्गोरिदम सबसे सस्ता ऐसा किनारा जोड़कर इसे बनाता है जिससे चक्र न बने।',
+bk1:'बैकट्रैकिंग हल को चरण-दर-चरण बनाती है और जैसे ही कोई आंशिक हल वैध उत्तर तक नहीं पहुँच सकता, उसे छोड़ देती है।',
+bk2:'N-क्वीन्स समस्या में रानियों को एक-एक पंक्ति में रखा जाता है और जब कोई रानी पहले रखी रानी के हमले में आती है तो पीछे लौटा जाता है।',
+bk3:'ब्रांच एंड बाउंड खोज-वृक्ष की उन शाखाओं को काट देता है जिनकी सीमा अब तक मिले सर्वश्रेष्ठ हल से बेहतर नहीं हो सकती।'});
+Object.assign(FIG,{as1:{alt:'graph of f(n) staying below c times g(n) after a threshold n0'},gp1:{alt:'graph with vertices coloured by level from the source'},dp2:{alt:'table with items as rows and capacities as columns'}});
+Object.assign(VN,{as3:()=>10*10,dc3:()=>Math.log2(1024)+1,dp2:()=>(5+1)*(10+1),gp3:()=>7-1});
+Q.push(
+['Big-O notation gives which kind of bound?',['Lower bound','Upper bound','Exact bound','Average bound'],1,1,'asy','as1','Mixing up O, Omega and Theta'],
+['f(n) is Theta(g(n)) when it is...',['Only O(g(n))','Only Omega(g(n))','Both O(g(n)) and Omega(g(n))','Neither'],2,2,'asy','as2','Confusing tight and upper bounds'],
+['Two nested loops each run n times. For n = 10, how many times does the inner body run?',[],100,1,'asy','as3','Adding loop counts instead of multiplying','num'],
+['Which recurrence describes splitting into two halves and combining in linear time?',['T(n) = T(n-1) + O(1)','T(n) = 2T(n/2) + O(n)','T(n) = 2T(n-1)','T(n) = T(n/2)'],1,2,'dac','dc1','Mixing up recurrence shapes'],
+['The Master Theorem applies to recurrences of which form?',['T(n) = T(n-1) + f(n)','T(n) = aT(n/b) + f(n)','T(n) = T(n) + 1','T(n) = n²'],1,2,'dac','dc2','Applying the Master Theorem to non-dividing recurrences'],
+['Binary search on 1024 sorted items needs at most log2(n) + 1 comparisons. How many is that?',[],11,2,'dac','dc3','Forgetting the +1 in log2(n) + 1','num'],
+['A greedy algorithm is correct only if the problem has...',['Overlapping subproblems only','The greedy-choice property and optimal substructure','A recurrence','Sorted input'],1,2,'grd','gr1','Believing greedy always works'],
+['Activity selection first sorts activities by...',['Earliest start','Finish time','Activity length','Profit'],1,1,'grd','gr2','Sorting by start time instead of finish time'],
+['Huffman coding gives frequent symbols...',['Longer codes','Shorter codes','Equal length codes','No codes'],1,2,'grd','gr3','Reversing code length and frequency'],
+['Dynamic programming is useful when a problem has...',['Overlapping subproblems and optimal substructure','Only independent subproblems','No recursion','Random inputs'],0,2,'dp','dp1','Confusing dynamic programming with divide and conquer'],
+['A knapsack table has rows 0 to 5 (items) and columns 0 to 10 (capacity). How many cells does it have?',[],66,2,'dp','dp2','Forgetting row 0 and column 0','num'],
+['Name the dynamic programming approach that fills a table bottom-up.',[],'Tabulation',2,'dp','dp3','Mixing up memoization and tabulation','short',['tabulation']],
+['Breadth first search finds shortest paths in...',['Unweighted graphs','Graphs with negative weights','Weighted graphs only','Trees only'],0,2,'grp','gp1','Using BFS for weighted shortest paths'],
+["Dijkstra's algorithm requires edge weights that are...",['Non-negative','Allowed to be negative','All equal','Integers only'],0,2,'grp','gp2','Using Dijkstra with negative edges'],
+['A minimum spanning tree of a connected graph with 7 vertices has how many edges?',[],6,2,'grp','gp3','Confusing the number of vertices and edges','num'],
+['Backtracking abandons a partial solution when it...',['Is long','Cannot lead to a valid answer','Is the first one found','Uses recursion'],1,1,'bt','bk1','Believing backtracking checks every full candidate'],
+['N-Queens backtracks when a queen...',['Is placed in a new row','Would be attacked by one already placed','Is on the first column','Is the last queen'],1,2,'bt','bk2','Misunderstanding the N-Queens constraint'],
+['Which technique prunes branches whose bound cannot beat the best solution so far?',[],'Branch and bound',3,'bt','bk3','Confusing pruning with plain backtracking','short',['branch and bound','branch-and-bound']]);
+function subjRow(list){const r=mk('div',null,'row');r.style.margin='4px 0';['All','Data Structures','DAA'].forEach(n=>{const b=mk('button',n,'chip');b.onclick=()=>list.querySelectorAll('input').forEach(c=>c.checked=n==='All'||subjOf(c.value)===n);r.append(b)});return r}
+function drawMap(mp){mp.textContent='';const ns='http://www.w3.org/2000/svg',ks=Object.keys(T),dep={};
+ const d=t=>dep[t]!==undefined?dep[t]:(dep[t]=(PRE[t]||[]).filter(p=>T[p]).reduce((m,p)=>Math.max(m,d(p)+1),0));ks.forEach(d);
+ const cols={};ks.forEach(t=>(cols[dep[t]]=cols[dep[t]]||[]).push(t));const nc=Math.max(...Object.keys(cols).map(Number))+1,mr=Math.max(...Object.values(cols).map(a=>a.length));
+ const W=nc*180+20,H=mr*52+20,pos={};Object.entries(cols).forEach(([c,a])=>a.forEach((t,i)=>pos[t]=[10+c*180,10+i*52+(mr-a.length)*26]));
+ const s=document.createElementNS(ns,'svg');s.setAttribute('viewBox','0 0 '+W+' '+H);s.setAttribute('width',W);s.setAttribute('height',H);
+ s.innerHTML='<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a90bd"/></marker></defs>';
+ ks.forEach(t=>(PRE[t]||[]).filter(p=>pos[p]).forEach(p=>{const a=pos[p],b=pos[t],e=document.createElementNS(ns,'path');
+  e.setAttribute('d','M'+(a[0]+140)+' '+(a[1]+16)+' C'+(a[0]+160)+' '+(a[1]+16)+' '+(b[0]-20)+' '+(b[1]+16)+' '+b[0]+' '+(b[1]+16));e.setAttribute('fill','none');e.setAttribute('stroke','#8a90bd');e.setAttribute('marker-end','url(#ar)');s.append(e)}));
+ ks.forEach(t=>{const m=eff(t),g=document.createElementNS(ns,'g'),r=document.createElementNS(ns,'rect'),x=document.createElementNS(ns,'text');
+  r.setAttribute('x',pos[t][0]);r.setAttribute('y',pos[t][1]);r.setAttribute('width',140);r.setAttribute('height',32);r.setAttribute('rx',6);r.setAttribute('fill',m>=.7?'#1a8a5a':m>=.4?'#FFE45C':'#c63b3b');
+  r.setAttribute('stroke',subjOf(t)==='DAA'?'#ff9f1c':'#8a90bd');r.setAttribute('stroke-width',2.5);
+  x.setAttribute('x',pos[t][0]+70);x.setAttribute('y',pos[t][1]+20);x.setAttribute('text-anchor','middle');x.setAttribute('style','font-size:11px;fill:'+(m>=.4&&m<.7?'#14173A':'#fff'));x.textContent=T[t];g.append(r,x);s.append(g)});
+ const w=mk('div');w.style.overflowX='auto';w.append(s);mp.append(w,mk('p','Arrows run from prerequisite to topic. Green is strong, yellow developing, red weak. Orange outline marks DAA topics; grey marks Data Structures.','mut'))}
+const sf=$('#sfil');['All','Data Structures','DAA'].forEach(n=>{const b=mk('button',n,'chip');b.onclick=()=>{subjF=n;tchips();sf.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))};b.setAttribute('aria-pressed',n==='All');sf.append(b)});
+
+tagAll();srcs();tchips();
+</script></body></html>

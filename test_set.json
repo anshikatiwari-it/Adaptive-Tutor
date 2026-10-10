@@ -362,6 +362,139 @@
   },
   {
     "id": "q22",
+    "question": "What does Big-O notation describe?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Big-O notation gives an upper bound on growth rate: f(n) is O(g(n)) if f(n) is at most c times g(n) for all large n.",
+    "reference_contexts": [
+      "Big-O notation gives an upper bound on growth rate: f(n) is O(g(n)) if f(n) is at most c times g(n) for all large n."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Lecture1.pptx",
+        "location": "Slide 4"
+      }
+    ]
+  },
+  {
+    "id": "q23",
+    "question": "How does the Master Theorem solve recurrences?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "The Master Theorem solves recurrences of the form T(n) = aT(n/b) + f(n) by comparing f(n) with n raised to the power log base b of a.",
+    "reference_contexts": [
+      "The Master Theorem solves recurrences of the form T(n) = aT(n/b) + f(n) by comparing f(n) with n raised to the power log base b of a."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Textbook.pdf",
+        "location": "Page 94"
+      }
+    ]
+  },
+  {
+    "id": "q24",
+    "question": "How does Huffman coding assign codes?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Huffman coding repeatedly merges the two least frequent symbols, giving frequent symbols shorter codes and producing an optimal prefix code.",
+    "reference_contexts": [
+      "Huffman coding repeatedly merges the two least frequent symbols, giving frequent symbols shorter codes and producing an optimal prefix code."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Textbook.pdf",
+        "location": "Page 131"
+      }
+    ]
+  },
+  {
+    "id": "q25",
+    "question": "What does the knapsack table store?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "The 0/1 knapsack table K[i][w] holds the best value using the first i items with capacity w, and takes O(nW) time to fill.",
+    "reference_contexts": [
+      "The 0/1 knapsack table K[i][w] holds the best value using the first i items with capacity w, and takes O(nW) time to fill."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Lecture2.mp4",
+        "location": "31:10"
+      }
+    ]
+  },
+  {
+    "id": "q26",
+    "question": "How does Dijkstra find shortest paths?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Dijkstra's algorithm finds shortest paths from a source in a graph with non-negative edge weights by repeatedly settling the closest unsettled vertex.",
+    "reference_contexts": [
+      "Dijkstra's algorithm finds shortest paths from a source in a graph with non-negative edge weights by repeatedly settling the closest unsettled vertex."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Lecture2.mp4",
+        "location": "38:45"
+      }
+    ]
+  },
+  {
+    "id": "q27",
+    "question": "Why does the N-Queens solution backtrack?",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "The N-Queens problem places queens one row at a time and backtracks when a queen would be attacked by one already placed.",
+    "reference_contexts": [
+      "The N-Queens problem places queens one row at a time and backtracks when a queen would be attacked by one already placed."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Lecture2.mp4",
+        "location": "44:00"
+      }
+    ]
+  },
+  {
+    "id": "q28",
+    "question": "Compare memoization and tabulation",
+    "type": "single-source",
+    "answerable": true,
+    "ground_truth": "Memoization stores results top-down as recursive calls return, while tabulation fills a table bottom-up, and both avoid recomputing subproblems.",
+    "reference_contexts": [
+      "Memoization stores results top-down as recursive calls return, while tabulation fills a table bottom-up, and both avoid recomputing subproblems."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Textbook.pdf",
+        "location": "Page 152"
+      }
+    ]
+  },
+  {
+    "id": "q29",
+    "question": "Compare BFS and Dijkstra for shortest paths",
+    "type": "multi-source",
+    "answerable": true,
+    "ground_truth": "Breadth first search explores a graph level by level using a queue and finds shortest paths in unweighted graphs in O(V + E) time. Dijkstra's algorithm finds shortest paths from a source in a graph with non-negative edge weights by repeatedly settling the closest unsettled vertex.",
+    "reference_contexts": [
+      "Breadth first search explores a graph level by level using a queue and finds shortest paths in unweighted graphs in O(V + E) time.",
+      "Dijkstra's algorithm finds shortest paths from a source in a graph with non-negative edge weights by repeatedly settling the closest unsettled vertex."
+    ],
+    "reference_locations": [
+      {
+        "source": "DAA_Lecture1.pptx",
+        "location": "Slide 30"
+      },
+      {
+        "source": "DAA_Lecture2.mp4",
+        "location": "38:45"
+      }
+    ]
+  },
+  {
+    "id": "q30",
     "question": "Explain quantum entanglement",
     "type": "off-material",
     "answerable": false,
@@ -370,7 +503,7 @@
     "reference_locations": []
   },
   {
-    "id": "q23",
+    "id": "q31",
     "question": "Who won the 1998 World Cup?",
     "type": "off-material",
     "answerable": false,
@@ -379,7 +512,7 @@
     "reference_locations": []
   },
   {
-    "id": "q24",
+    "id": "q32",
     "question": "How does photosynthesis work?",
     "type": "off-material",
     "answerable": false,
@@ -388,7 +521,7 @@
     "reference_locations": []
   },
   {
-    "id": "q25",
+    "id": "q33",
     "question": "What is a hash table?",
     "type": "off-material",
     "answerable": false,
@@ -397,7 +530,7 @@
     "reference_locations": []
   },
   {
-    "id": "q26",
+    "id": "q34",
     "question": "Explain gradient descent",
     "type": "off-material",
     "answerable": false,
@@ -406,7 +539,7 @@
     "reference_locations": []
   },
   {
-    "id": "q27",
+    "id": "q35",
     "question": "What is the capital of France?",
     "type": "off-material",
     "answerable": false,
